@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>xlayer-trust-leases</title>
+    <style>
+      :root {
+        --bg: #f1eadc;
+        --panel: #fffaf0;
+        --ink: #181813;
+        --muted: #5f5a4f;
+        --line: #d4cab6;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: "Avenir Next Condensed", "Franklin Gothic Medium", "Arial Narrow", sans-serif;
+        color: var(--ink);
+        background: linear-gradient(180deg, rgba(255,255,255,0.35), transparent 22%), radial-gradient(circle at top left, #fff4d6 0, transparent 28%), linear-gradient(180deg, #e7dcc6 0%, var(--bg) 100%);
+      }
+      .wrap { width: min(1240px, calc(100vw - 32px)); margin: 24px auto 56px; }
+      .hero, .panel { border: 1px solid var(--line); border-radius: 24px; background: var(--panel); box-shadow: 0 14px 40px rgba(50, 36, 12, 0.08); }
+      .hero { padding: 28px; }
+      .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; margin-top: 18px; }
+      .metrics { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-top: 18px; }
+      .metric, .signal-card { border: 1px solid var(--line); border-radius: 18px; padding: 16px; background: #fffdf7; }
+      .metric .label { font-size: 12px; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); }
+      .metric .value { font-size: 30px; margin-top: 8px; }
+      .panel { padding: 22px; }
+      .span-12 { grid-column: 1 / -1; }
+      .span-8 { grid-column: span 8; }
+      .span-6 { grid-column: span 6; }
+      .span-4 { grid-column: span 4; }
+      h1 { margin: 10px 0 6px; font-size: 48px; line-height: .95; }
+      h2 { margin: 0 0 12px; font-size: 24px; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { padding: 10px 8px; border-top: 1px solid var(--line); text-align: left; vertical-align: top; }
+      th { color: var(--muted); text-transform: uppercase; letter-spacing: .12em; font-size: 12px; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+      @media (max-width: 980px) { .metrics { grid-template-columns: 1fr; } .span-4, .span-6, .span-8 { grid-column: 1 / -1; } h1 { font-size: 36px; } }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <section class="hero">
+        <div style="text-transform: uppercase; letter-spacing: .14em; color: var(--muted); font-size: 12px;">Human trust leases · X Layer</div>
+        <h1>xlayer-trust-leases</h1>
+        <p style="color: var(--muted); line-height: 1.55;">
+          A human-issued lease gates live X Layer agent execution before funds move. Each round binds budget, protocol, counterparty,
+          expiry, and wallet scope into one lease, then writes a proof-backed receipt.
+        </p>
+        <div class="metrics">
+          <div class="metric"><div class="label">Lease outcome</div><div class="value">resize</div></div>
+          <div class="metric"><div class="label">Trust zone</div><div class="value">yellow</div></div>
+          <div class="metric"><div class="label">Spent 24h</div><div class="value">$6.00</div></div>
+          <div class="metric"><div class="label">Remaining</div><div class="value">$9.00</div></div>
+          <div class="metric"><div class="label">Execution</div><div class="value">broadcasted</div></div>
+        </div>
+      </section>
+
+      <section class="grid">
+        <article class="panel span-8">
+          <h2>Lease Envelope</h2>
+          <table>
+            <thead><tr><th>Field</th><th>Value</th></tr></thead>
+            <tbody>
+              <tr><td>Lease ID</td><td class="mono">lease_7997019c-c5b8-4b8a-9104-589ba18ca3ae</td></tr>
+              <tr><td>Consumer</td><td>strategy-office</td></tr>
+              <tr><td>Wallet</td><td class="mono">0xdbc8e35ea466f85d57c0cc1517a81199b8549f04</td></tr>
+              <tr><td>Assets</td><td>USDT0, USDC, OKB</td></tr>
+              <tr><td>Protocols</td><td>okx-aggregator, quickswap</td></tr>
+              <tr><td>Per-tx / daily</td><td>$3 / $15</td></tr>
+              <tr><td>Expires</td><td>2026-04-13T06:34:43.859Z</td></tr>
+            </tbody>
+          </table>
+        </article>
+
+        <article class="panel span-4">
+          <h2>Latest Request</h2>
+          <p><strong>USDC/USDT0</strong></p>
+          <p>Action: rebalance</p>
+          <p>Venue: okx-aggregator</p>
+          <p>Counterparty: okx-aggregator</p>
+          <p>Requested: $3.67</p>
+          <p>Final: $3</p>
+          <p style="margin-top: 12px; color: var(--muted);">USDC is underweight and USDT0 is overweight relative to the office target allocation.</p>
+        </article>
+
+        <article class="panel span-6">
+          <h2>Checks</h2>
+          <table>
+            <thead><tr><th>Check</th><th>Status</th><th>Note</th></tr></thead>
+            <tbody>
+        <tr>
+          <td>Operator mode</td>
+          <td>pass</td>
+          <td>operator=active</td>
+        </tr>
+      
+        <tr>
+          <td>Lease status</td>
+          <td>pass</td>
+          <td>status=active</td>
+        </tr>
+      
+        <tr>
+          <td>Lease expiry</td>
+          <td>pass</td>
+          <td>expiresAt=2026-04-13T06:34:43.859Z</td>
+        </tr>
+      
+        <tr>
+          <td>Wallet scope</td>
+          <td>pass</td>
+          <td>wallet=0xdbc8e35ea466f85d57c0cc1517a81199b8549f04</td>
+        </tr>
+      
+        <tr>
+          <td>Reason required</td>
+          <td>pass</td>
+          <td>reason present</td>
+        </tr>
+      
+        <tr>
+          <td>Action allowlist</td>
+          <td>pass</td>
+          <td>action=rebalance</td>
+        </tr>
+      
+        <tr>
+          <td>Asset allowlist</td>
+          <td>pass</td>
+          <td>USDT0-&gt;USDC</td>
+        </tr>
+      
+        <tr>
+          <td>Protocol allowlist</td>
+          <td>pass</td>
+          <td>venue=okx-aggregator</td>
+        </tr>
+      
+        <tr>
+          <td>Counterparty allowlist</td>
+          <td>pass</td>
+          <td>counterparty=okx-aggregator</td>
+        </tr>
+      
+        <tr>
+          <td>Per-tx budget</td>
+          <td>fail</td>
+          <td>request=$3.67 / limit=$3</td>
+        </tr>
+      
+        <tr>
+          <td>Daily budget</td>
+          <td>pass</td>
+          <td>remaining=$12.00</td>
+        </tr>
+      
+        <tr>
+          <td>Route available</td>
+          <td>pass</td>
+          <td>route ready</td>
+        </tr>
+      
+        <tr>
+          <td>Price impact</td>
+          <td>pass</td>
+          <td>impact=-0.02% / max=2%</td>
+        </tr>
+      
+        <tr>
+          <td>Token safety</td>
+          <td>pass</td>
+          <td>token scan passed</td>
+        </tr>
+      </tbody>
+          </table>
+        </article>
+
+        <article class="panel span-6">
+          <h2>Receipt</h2>
+          <p><strong>Status:</strong> broadcasted</p>
+          <p><strong>Spent:</strong> $3.00</p>
+          <p><strong>Note:</strong> Executed USDT0 -&gt; USDC via CurveNG -&gt; OkieStableSwap.</p>
+          <p><strong>Tx:</strong> <span class="mono">0x5289c0f232e55e9d053ffee4d2e3269e2e2833c3cea41beff9c0ea476bd2d9f3</span></p>
+          <p><strong>Explorer:</strong> <a href="https://www.oklink.com/xlayer/tx/0x5289c0f232e55e9d053ffee4d2e3269e2e2833c3cea41beff9c0ea476bd2d9f3">open</a></p>
+        </article>
+
+        <article class="panel span-12">
+          <h2>Recent Lease Rounds</h2>
+          <table>
+            <thead><tr><th>Generated</th><th>Outcome</th><th>Tx</th><th>Summary</th></tr></thead>
+            <tbody>
+        <tr>
+          <td>2026-04-12T06:36:44.916Z</td>
+          <td>resize</td>
+          <td class="mono">0x5289c0f232e55e9d053ffee4d2e3269e2e2833c3cea41beff9c0ea476bd2d9f3</td>
+          <td>product=xlayer-trust-leases | operator=active | lease=lease_7997019c-c5b8-4b8a-9104-589ba18ca3ae | consumer=strategy-office | outcome=resize | zone=yellow | notional=3 | spent24h=6.00 | tx=0x5289c0f232e55e9d053ffee4d2e3269e2e2833c3cea41beff9c0ea476bd2d9f3</td>
+        </tr>
+      
+        <tr>
+          <td>2026-04-12T06:35:59.872Z</td>
+          <td>block</td>
+          <td class="mono">none</td>
+          <td>product=xlayer-trust-leases | operator=active | lease=lease_7997019c-c5b8-4b8a-9104-589ba18ca3ae | consumer=strategy-office | outcome=block | zone=yellow | notional=0 | spent24h=3.00 | tx=none</td>
+        </tr>
+      
+        <tr>
+          <td>2026-04-12T06:35:00.460Z</td>
+          <td>resize</td>
+          <td class="mono">0xf66a7283143e1a29dde4d90058ccebce1e5cb6e3b00ab3f400bd90e6835bdd7f</td>
+          <td>product=xlayer-trust-leases | operator=active | lease=lease_7997019c-c5b8-4b8a-9104-589ba18ca3ae | consumer=strategy-office | outcome=resize | zone=yellow | notional=3 | spent24h=0.00 | tx=0xf66a7283143e1a29dde4d90058ccebce1e5cb6e3b00ab3f400bd90e6835bdd7f</td>
+        </tr>
+      </tbody>
+          </table>
+        </article>
+      </section>
+    </div>
+  </body>
+</html>

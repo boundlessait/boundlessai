@@ -1,0 +1,38 @@
+# Fly.io config for x402-guard backend
+app = "x402-guard"
+primary_region = "sin"  # Singapore — closest to Thailand
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "8080"
+  XLAYER_RPC_URL = "https://testrpc.xlayer.tech"
+  XLAYER_CHAIN_ID = "1952"
+  BACKEND_URL = "http://localhost:4402"
+  X402_DATA_DIR = "/data"
+  CORS_ORIGINS = "http://localhost:3000,http://localhost:5173"
+  NOTIFICATION_COOLDOWN_SECONDS = "60"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "suspend"
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    grace_period = "10s"
+    interval = "30s"
+    method = "GET"
+    path = "/health"
+    timeout = "5s"
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1
+
+[mounts]
+  source = "x402_data"
+  destination = "/data"

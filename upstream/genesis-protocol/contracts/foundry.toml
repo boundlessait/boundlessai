@@ -1,0 +1,33 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+test = "test"
+solc = "0.8.26"
+optimizer = true
+optimizer_runs = 200
+evm_version = "cancun"
+via_ir = true
+remappings = [
+    "v4-core/=lib/v4-core/",
+    "forge-std/=lib/forge-std/src/",
+    "solmate/=lib/v4-core/lib/solmate/",
+    "@openzeppelin/contracts/=lib/v4-core/lib/openzeppelin-contracts/contracts/",
+    "ds-test/=lib/forge-std/lib/ds-test/src/",
+]
+
+[profile.default.fuzz]
+runs = 256
+
+[rpc_endpoints]
+xlayer = "https://rpc.xlayer.tech"
+xlayer_testnet = "https://testrpc.xlayer.tech"
+
+# Uniswap V4 on X Layer (Chain 196) - verified addresses
+[profile.xlayer_v4]
+pool_manager = "0x360e68faCCca8cA495c1B759Fd9EEe466dB9Fb32"
+position_manager = "0x1b35d13a2e2528f192637f14b05f0dc0e7deb566"
+universal_router = "0x112908dAc86e20E7241b0927479ea3bF935D1fA0"
+quoter = "0x3972c00f7ed4885e145823eb7c655375d275a1c5"
+state_view = "0x76fd297e2d437cd7f76d50f01afe6160f86e9990"
+permit2 = "0x000000000022D473030F116dDEE9F6B43aC78BA3"

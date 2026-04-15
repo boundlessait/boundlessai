@@ -1,0 +1,8 @@
+{
+  "operatorName": "human-principal",
+  "mode": "active",
+  "lastCommand": "resume",
+  "note": "restore active after api message smoke test",
+  "updatedAt": "2026-04-15T01:29:36.264Z",
+  "command": "resume"
+}

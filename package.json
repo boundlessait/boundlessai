@@ -1,0 +1,47 @@
+{
+  "name": "xlayer-trust-leases",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "app:check": "tsc --noEmit",
+    "core:build": "tsc -p tsconfig.core.json",
+    "core:check": "tsc -p tsconfig.core.json --noEmit",
+    "check": "tsc -p tsconfig.json --noEmit",
+    "charter:issue": "node --import tsx scripts/issue-charter.ts",
+    "lease:issue": "node --import tsx scripts/issue-lease.ts",
+    "round:live": "node --import tsx scripts/live-round.ts",
+    "status:latest": "node --import tsx scripts/status-latest.ts",
+    "preflight:treasury": "node --import tsx scripts/treasury-preflight.ts",
+    "operator:status": "node --import tsx scripts/operator-command.ts status",
+    "operator:pause": "node --import tsx scripts/operator-command.ts pause",
+    "operator:review": "node --import tsx scripts/operator-command.ts review",
+    "operator:resume": "node --import tsx scripts/operator-command.ts resume",
+    "proof:render": "node --import tsx scripts/render-proof.ts",
+    "demo:prepare": "npm run charter:issue && npm run lease:issue && npm run operator:resume -- \"demo baseline\" && npm run round:live && npm run proof:render",
+    "demo:serve": "node --import tsx scripts/serve-demo.ts",
+    "lease:revoke": "node --import tsx scripts/revoke-lease.ts",
+    "contracts:compile": "npm --prefix contracts run compile",
+    "contracts:test": "npm --prefix contracts run test",
+    "contracts:deploy:testnet": "npm --prefix contracts run deploy:testnet",
+    "contracts:deploy:mainnet": "npm --prefix contracts run deploy:mainnet",
+    "contracts:deploy:guard:testnet": "npm --prefix contracts run deploy:guard:testnet",
+    "contracts:deploy:guard:mainnet": "npm --prefix contracts run deploy:guard:mainnet"
+  },
+  "dependencies": {
+    "next": "^16.2.3",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "viem": "^2.44.4",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "tsx": "^4.19.4",
+    "typescript": "^5.5.4"
+  }
+}

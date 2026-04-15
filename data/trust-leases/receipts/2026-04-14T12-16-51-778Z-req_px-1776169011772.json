@@ -1,0 +1,9 @@
+{
+  "generatedAt": "2026-04-14T12:16:51.778Z",
+  "leaseId": "lease_a65108f6-666c-4cc5-8be3-99007b6afada",
+  "requestId": "req_px-1776169011772",
+  "consumerName": "strategy-office",
+  "status": "blocked",
+  "spentUsd": 0,
+  "note": "No rebalance candidate met the minimum threshold for this round."
+}

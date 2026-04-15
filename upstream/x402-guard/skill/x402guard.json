@@ -1,0 +1,68 @@
+{
+  "name": "x402guard",
+  "version": "1.0.0",
+  "description": "x402 Guard — AI Bot Spending Firewall. Enforces spending limits on every payment your AI agent makes. Integrates with OKX Agentic Wallet and x402 protocol.",
+  "author": "x402guard",
+  "homepage": "https://github.com/mintttch2/x402-guard",
+  "tools": [
+    {
+      "name": "guard_check",
+      "description": "Check if an x402 payment is allowed under the bot's spending policy. ALWAYS call this before executing any payment. Returns approve/soft_alert/block.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "agent_id":   { "type": "string",  "description": "Unique bot/agent ID (e.g. 'sniper-bot-1')" },
+          "amount":     { "type": "number",  "description": "Payment amount in USD" },
+          "pay_to":     { "type": "string",  "description": "Recipient address or domain" },
+          "network":    { "type": "string",  "description": "Network (default: eip155:1952 for X Layer testnet)" },
+          "asset":      { "type": "string",  "description": "Token contract address (default: USDC on X Layer)" }
+        },
+        "required": ["agent_id", "amount", "pay_to"]
+      }
+    },
+    {
+      "name": "guard_stats",
+      "description": "Get spending stats for a bot — daily spent, remaining budget, transaction count.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "agent_id": { "type": "string", "description": "Bot/agent ID" }
+        },
+        "required": ["agent_id"]
+      }
+    },
+    {
+      "name": "guard_register",
+      "description": "Register a new bot wallet with spending limits. Use this when setting up a new OKX Agentic Wallet sub-wallet as a bot.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "agent_id":       { "type": "string",  "description": "Unique bot ID" },
+          "name":           { "type": "string",  "description": "Bot display name (e.g. 'Sniper Bot #1')" },
+          "wallet_address": { "type": "string",  "description": "OKX Agentic Wallet EVM address" },
+          "bot_type":       { "type": "string",  "description": "Bot type: sniper/arbitrage/prediction/sentiment/custom" },
+          "daily_limit":    { "type": "number",  "description": "Max USD per day" },
+          "per_tx_limit":   { "type": "number",  "description": "Max USD per single transaction" }
+        },
+        "required": ["agent_id", "name", "daily_limit", "per_tx_limit"]
+      }
+    },
+    {
+      "name": "guard_kill",
+      "description": "Emergency kill switch — immediately blocks all transactions for a bot.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "agent_id": { "type": "string", "description": "Bot ID to kill" }
+        },
+        "required": ["agent_id"]
+      }
+    }
+  ],
+  "config": {
+    "guard_api_url": "http://localhost:4402",
+    "network":       "eip155:1952",
+    "asset":         "0x4ae46a509f6b1d9056937ba4500cb143933d2dc8"
+  },
+  "instructions": "x402 Guard protects your OKX Agentic Wallet bots from overspending. Before EVERY payment action, call guard_check. If action is 'block', do NOT proceed with payment. If 'soft_alert', warn user but can proceed. If 'approve', proceed normally. Use guard_register to add your Agentic Wallet sub-wallets as monitored bots."
+}

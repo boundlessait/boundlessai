@@ -1,0 +1,207 @@
+{
+  "generatedAt": "2026-04-14T12:04:43.864Z",
+  "product": "xlayer-trust-leases",
+  "operator": {
+    "operatorName": "human-principal",
+    "mode": "active",
+    "lastCommand": "initialize",
+    "updatedAt": "2026-04-14T12:04:43.862Z"
+  },
+  "lease": {
+    "leaseId": "lease_7997019c-c5b8-4b8a-9104-589ba18ca3ae",
+    "issuedAt": "2026-04-12T06:34:43.858Z",
+    "expiresAt": "2026-04-13T06:34:43.859Z",
+    "status": "expired",
+    "ownerLabel": "human-principal",
+    "consumerName": "strategy-office",
+    "walletAddress": "0xdbc8e35ea466f85d57c0cc1517a81199b8549f04",
+    "baseAsset": "USDT0",
+    "allowedAssets": [
+      "USDT0",
+      "USDC",
+      "OKB"
+    ],
+    "allowedProtocols": [
+      "okx-aggregator",
+      "quickswap"
+    ],
+    "allowedActions": [
+      "buy",
+      "sell",
+      "rebalance"
+    ],
+    "counterpartyAllowlist": [
+      "okx-aggregator",
+      "quickswap"
+    ],
+    "perTxUsd": 3,
+    "dailyBudgetUsd": 15,
+    "trustRequirements": {
+      "reasonRequired": true,
+      "proofRequired": true,
+      "operatorCanPause": true,
+      "degradedRequiresReview": true
+    },
+    "notes": [
+      "Bounded execution lease for strategy-office treasury actions on X Layer."
+    ]
+  },
+  "treasury": {
+    "timestamp": "2026-04-14T12:04:40.777Z",
+    "network": "xlayer-mainnet",
+    "chainId": 196,
+    "baseAsset": "USDT0",
+    "totalUsd": 16.88,
+    "liquidUsd": 16.88210167,
+    "capitalAtRiskUsd": 0,
+    "balances": [
+      {
+        "symbol": "USDT0",
+        "amount": 7.647738,
+        "usdValue": 7.64957345
+      },
+      {
+        "symbol": "USDC",
+        "amount": 6.102745,
+        "usdValue": 6.10182958
+      },
+      {
+        "symbol": "OKB",
+        "amount": 0.03672804607421759,
+        "usdValue": 3.13069864
+      }
+    ]
+  },
+  "request": {
+    "requestId": "req_px-1776168283859",
+    "createdAt": "2026-04-14T12:04:43.859Z",
+    "sourceProject": "strategy-office",
+    "consumerName": "strategy-office",
+    "leaseId": "lease_7997019c-c5b8-4b8a-9104-589ba18ca3ae",
+    "action": "rebalance",
+    "assetPair": "OKB/USDT0",
+    "fromToken": "USDT0",
+    "toToken": "OKB",
+    "venueHint": "CurveNG -> PotatoSwap",
+    "counterparty": "CurveNG -> PotatoSwap",
+    "notionalUsd": 3,
+    "reason": "OKB is underweight and USDT0 is overweight relative to the office target allocation."
+  },
+  "checks": [
+    {
+      "id": "operator_mode",
+      "label": "Operator mode",
+      "ok": true,
+      "note": "operator=active"
+    },
+    {
+      "id": "lease_status",
+      "label": "Lease status",
+      "ok": false,
+      "note": "status=expired"
+    },
+    {
+      "id": "lease_expiry",
+      "label": "Lease expiry",
+      "ok": false,
+      "note": "expiresAt=2026-04-13T06:34:43.859Z"
+    },
+    {
+      "id": "wallet_scope",
+      "label": "Wallet scope",
+      "ok": true,
+      "note": "wallet=0xdbc8e35ea466f85d57c0cc1517a81199b8549f04"
+    },
+    {
+      "id": "reason_required",
+      "label": "Reason required",
+      "ok": true,
+      "note": "reason present"
+    },
+    {
+      "id": "action_allowed",
+      "label": "Action allowlist",
+      "ok": true,
+      "note": "action=rebalance"
+    },
+    {
+      "id": "asset_allowed",
+      "label": "Asset allowlist",
+      "ok": true,
+      "note": "USDT0->OKB"
+    },
+    {
+      "id": "protocol_allowed",
+      "label": "Protocol allowlist",
+      "ok": true,
+      "note": "venue=CurveNG -> PotatoSwap"
+    },
+    {
+      "id": "counterparty_allowed",
+      "label": "Counterparty allowlist",
+      "ok": true,
+      "note": "counterparty=CurveNG -> PotatoSwap"
+    },
+    {
+      "id": "per_tx_limit",
+      "label": "Per-tx budget",
+      "ok": true,
+      "note": "request=$3 / limit=$3"
+    },
+    {
+      "id": "daily_budget",
+      "label": "Daily budget",
+      "ok": true,
+      "note": "remaining=$15.00"
+    },
+    {
+      "id": "route_available",
+      "label": "Route available",
+      "ok": true,
+      "note": "route ready"
+    },
+    {
+      "id": "price_impact",
+      "label": "Price impact",
+      "ok": true,
+      "note": "impact=0.12% / max=2%"
+    },
+    {
+      "id": "token_safety",
+      "label": "Token safety",
+      "ok": true,
+      "note": "token scan passed"
+    }
+  ],
+  "usage": {
+    "startedAt": "2026-04-13T12:04:43.866Z",
+    "spent24hUsd": 0,
+    "remainingDailyUsd": 15,
+    "receiptCount24h": 1
+  },
+  "decision": {
+    "outcome": "block",
+    "trustZone": "red",
+    "finalNotionalUsd": 0,
+    "policyHits": [
+      "lease_status",
+      "lease_expiry"
+    ],
+    "rationale": "Trust lease blocked the request because lease_status, lease_expiry failed."
+  },
+  "execution": {
+    "status": "blocked",
+    "network": "xlayer-mainnet",
+    "chainId": 196,
+    "note": "Execution blocked by quorum outcome: reject."
+  },
+  "receipt": {
+    "generatedAt": "2026-04-14T12:04:43.864Z",
+    "leaseId": "lease_7997019c-c5b8-4b8a-9104-589ba18ca3ae",
+    "requestId": "req_px-1776168283859",
+    "consumerName": "strategy-office",
+    "status": "blocked",
+    "spentUsd": 0,
+    "note": "Execution blocked by quorum outcome: reject."
+  }
+}

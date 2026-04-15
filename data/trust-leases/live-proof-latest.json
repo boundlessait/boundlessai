@@ -1,0 +1,207 @@
+{
+  "generatedAt": "2026-04-14T12:16:51.778Z",
+  "product": "xlayer-trust-leases",
+  "operator": {
+    "operatorName": "human-principal",
+    "mode": "active",
+    "lastCommand": "resume",
+    "note": "restore active after contract-ready smoke test",
+    "updatedAt": "2026-04-15T02:13:54.892Z"
+  },
+  "lease": {
+    "leaseId": "lease_a65108f6-666c-4cc5-8be3-99007b6afada",
+    "issuedAt": "2026-04-14T12:15:26.991Z",
+    "expiresAt": "2026-04-15T12:15:27.000Z",
+    "status": "active",
+    "ownerLabel": "human-principal",
+    "consumerName": "strategy-office",
+    "walletAddress": "0xdbc8e35ea466f85d57c0cc1517a81199b8549f04",
+    "baseAsset": "USDT0",
+    "allowedAssets": [
+      "USDT0",
+      "USDC",
+      "OKB"
+    ],
+    "allowedProtocols": [
+      "okx-aggregator",
+      "quickswap"
+    ],
+    "allowedActions": [
+      "buy",
+      "sell",
+      "rebalance"
+    ],
+    "counterpartyAllowlist": [
+      "okx-aggregator",
+      "quickswap"
+    ],
+    "perTxUsd": 3,
+    "dailyBudgetUsd": 15,
+    "trustRequirements": {
+      "reasonRequired": true,
+      "proofRequired": true,
+      "operatorCanPause": true,
+      "degradedRequiresReview": true
+    },
+    "notes": [
+      "Bounded execution lease for strategy-office treasury actions on X Layer."
+    ]
+  },
+  "treasury": {
+    "timestamp": "2026-04-14T12:16:51.769Z",
+    "network": "xlayer-mainnet",
+    "chainId": 196,
+    "baseAsset": "USDT0",
+    "totalUsd": 16.89,
+    "liquidUsd": 16.88583346,
+    "capitalAtRiskUsd": 0,
+    "balances": [
+      {
+        "symbol": "USDC",
+        "amount": 6.102745,
+        "usdValue": 6.10152445
+      },
+      {
+        "symbol": "OKB",
+        "amount": 0.07140224930861952,
+        "usdValue": 6.08632773
+      },
+      {
+        "symbol": "USDT0",
+        "amount": 4.696901,
+        "usdValue": 4.69798128
+      }
+    ]
+  },
+  "request": {
+    "requestId": "req_px-1776169011772",
+    "createdAt": "2026-04-14T12:16:51.772Z",
+    "sourceProject": "strategy-office",
+    "consumerName": "strategy-office",
+    "leaseId": "lease_a65108f6-666c-4cc5-8be3-99007b6afada",
+    "action": "rebalance",
+    "assetPair": "USDT0/USDC",
+    "fromToken": "USDT0",
+    "toToken": "USDC",
+    "venueHint": "okx-aggregator",
+    "counterparty": "okx-aggregator",
+    "notionalUsd": 0,
+    "reason": "No material allocation drift exceeded the minimum trade threshold for this strategy-office round."
+  },
+  "checks": [
+    {
+      "id": "operator_mode",
+      "label": "Operator mode",
+      "ok": true,
+      "note": "operator=active"
+    },
+    {
+      "id": "lease_status",
+      "label": "Lease status",
+      "ok": true,
+      "note": "status=active"
+    },
+    {
+      "id": "lease_expiry",
+      "label": "Lease expiry",
+      "ok": true,
+      "note": "expiresAt=2026-04-15T12:15:27.000Z"
+    },
+    {
+      "id": "wallet_scope",
+      "label": "Wallet scope",
+      "ok": true,
+      "note": "wallet=0xdbc8e35ea466f85d57c0cc1517a81199b8549f04"
+    },
+    {
+      "id": "reason_required",
+      "label": "Reason required",
+      "ok": true,
+      "note": "reason present"
+    },
+    {
+      "id": "action_allowed",
+      "label": "Action allowlist",
+      "ok": true,
+      "note": "action=rebalance"
+    },
+    {
+      "id": "asset_allowed",
+      "label": "Asset allowlist",
+      "ok": true,
+      "note": "USDT0->USDC"
+    },
+    {
+      "id": "protocol_allowed",
+      "label": "Protocol allowlist",
+      "ok": true,
+      "note": "venue=okx-aggregator"
+    },
+    {
+      "id": "counterparty_allowed",
+      "label": "Counterparty allowlist",
+      "ok": true,
+      "note": "counterparty=okx-aggregator"
+    },
+    {
+      "id": "per_tx_limit",
+      "label": "Per-tx budget",
+      "ok": true,
+      "note": "request=$0 / limit=$3"
+    },
+    {
+      "id": "daily_budget",
+      "label": "Daily budget",
+      "ok": true,
+      "note": "remaining=$15.00"
+    },
+    {
+      "id": "route_available",
+      "label": "Route available",
+      "ok": true,
+      "note": "route ready"
+    },
+    {
+      "id": "price_impact",
+      "label": "Price impact",
+      "ok": true,
+      "note": "impact=0.00% / max=2%"
+    },
+    {
+      "id": "token_safety",
+      "label": "Token safety",
+      "ok": true,
+      "note": "token scan passed"
+    }
+  ],
+  "usage": {
+    "startedAt": "2026-04-13T12:16:51.781Z",
+    "spent24hUsd": 0,
+    "remainingDailyUsd": 15,
+    "receiptCount24h": 2
+  },
+  "decision": {
+    "outcome": "block",
+    "trustZone": "yellow",
+    "finalNotionalUsd": 0,
+    "policyHits": [
+      "no_trade_candidate"
+    ],
+    "rationale": "No material allocation drift produced a leaseable strategy-office request in this round."
+  },
+  "execution": {
+    "status": "simulated",
+    "network": "xlayer-mainnet",
+    "chainId": 196,
+    "note": "No rebalance candidate met the minimum threshold for this round."
+  },
+  "receipt": {
+    "generatedAt": "2026-04-14T12:16:51.778Z",
+    "leaseId": "lease_a65108f6-666c-4cc5-8be3-99007b6afada",
+    "requestId": "req_px-1776169011772",
+    "consumerName": "strategy-office",
+    "status": "blocked",
+    "spentUsd": 0,
+    "note": "No rebalance candidate met the minimum threshold for this round."
+  }
+}

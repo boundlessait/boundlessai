@@ -1,0 +1,53 @@
+[
+  {
+    "generatedAt": "2026-04-14T12:16:51.778Z",
+    "leaseId": "lease_a65108f6-666c-4cc5-8be3-99007b6afada",
+    "requestId": "req_px-1776169011772",
+    "outcome": "block",
+    "summary": "product=xlayer-trust-leases | operator=active | lease=lease_a65108f6-666c-4cc5-8be3-99007b6afada | consumer=strategy-office | outcome=block | zone=yellow | notional=0 | spent24h=0.00 | tx=none",
+    "relativePath": "rounds/2026-04-14T12-16-51-778Z-req_px-1776169011772.json"
+  },
+  {
+    "generatedAt": "2026-04-14T12:15:57.627Z",
+    "leaseId": "lease_a65108f6-666c-4cc5-8be3-99007b6afada",
+    "requestId": "req_px-1776168957623",
+    "outcome": "approve",
+    "txHash": "0xd956b78edeff2f815f50cc337dff1715f32026d42802518036701cee1212fece",
+    "summary": "product=xlayer-trust-leases | operator=active | lease=lease_a65108f6-666c-4cc5-8be3-99007b6afada | consumer=strategy-office | outcome=approve | zone=green | notional=3 | spent24h=0.00 | tx=0xd956b78edeff2f815f50cc337dff1715f32026d42802518036701cee1212fece",
+    "relativePath": "rounds/2026-04-14T12-15-57-627Z-req_px-1776168957623.json"
+  },
+  {
+    "generatedAt": "2026-04-14T12:04:43.864Z",
+    "leaseId": "lease_7997019c-c5b8-4b8a-9104-589ba18ca3ae",
+    "requestId": "req_px-1776168283859",
+    "outcome": "block",
+    "summary": "product=xlayer-trust-leases | operator=active | lease=lease_7997019c-c5b8-4b8a-9104-589ba18ca3ae | consumer=strategy-office | outcome=block | zone=red | notional=0 | spent24h=0.00 | tx=none",
+    "relativePath": "rounds/2026-04-14T12-04-43-864Z-req_px-1776168283859.json"
+  },
+  {
+    "generatedAt": "2026-04-12T06:36:44.916Z",
+    "leaseId": "lease_7997019c-c5b8-4b8a-9104-589ba18ca3ae",
+    "requestId": "req_5bac55c7-66d0-4063-abba-5d7244cfd078",
+    "outcome": "resize",
+    "txHash": "0x5289c0f232e55e9d053ffee4d2e3269e2e2833c3cea41beff9c0ea476bd2d9f3",
+    "summary": "product=xlayer-trust-leases | operator=active | lease=lease_7997019c-c5b8-4b8a-9104-589ba18ca3ae | consumer=strategy-office | outcome=resize | zone=yellow | notional=3 | spent24h=6.00 | tx=0x5289c0f232e55e9d053ffee4d2e3269e2e2833c3cea41beff9c0ea476bd2d9f3",
+    "relativePath": "rounds/2026-04-12T06-36-44-916Z-req_5bac55c7-66d0-4063-abba-5d7244cfd078.json"
+  },
+  {
+    "generatedAt": "2026-04-12T06:35:59.872Z",
+    "leaseId": "lease_7997019c-c5b8-4b8a-9104-589ba18ca3ae",
+    "requestId": "req_d5a1f50e-7e47-45a1-88a1-4830cd611947",
+    "outcome": "block",
+    "summary": "product=xlayer-trust-leases | operator=active | lease=lease_7997019c-c5b8-4b8a-9104-589ba18ca3ae | consumer=strategy-office | outcome=block | zone=yellow | notional=0 | spent24h=3.00 | tx=none",
+    "relativePath": "rounds/2026-04-12T06-35-59-872Z-req_d5a1f50e-7e47-45a1-88a1-4830cd611947.json"
+  },
+  {
+    "generatedAt": "2026-04-12T06:35:00.460Z",
+    "leaseId": "lease_7997019c-c5b8-4b8a-9104-589ba18ca3ae",
+    "requestId": "req_4ee27a4b-dc43-4af0-a797-86754750cbdf",
+    "outcome": "resize",
+    "txHash": "0xf66a7283143e1a29dde4d90058ccebce1e5cb6e3b00ab3f400bd90e6835bdd7f",
+    "summary": "product=xlayer-trust-leases | operator=active | lease=lease_7997019c-c5b8-4b8a-9104-589ba18ca3ae | consumer=strategy-office | outcome=resize | zone=yellow | notional=3 | spent24h=0.00 | tx=0xf66a7283143e1a29dde4d90058ccebce1e5cb6e3b00ab3f400bd90e6835bdd7f",
+    "relativePath": "rounds/2026-04-12T06-35-00-460Z-req_4ee27a4b-dc43-4af0-a797-86754750cbdf.json"
+  }
+]

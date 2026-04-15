@@ -1,0 +1,11 @@
+{
+  "generatedAt": "2026-04-12T06:35:00.460Z",
+  "leaseId": "lease_7997019c-c5b8-4b8a-9104-589ba18ca3ae",
+  "requestId": "req_4ee27a4b-dc43-4af0-a797-86754750cbdf",
+  "consumerName": "strategy-office",
+  "status": "broadcasted",
+  "spentUsd": 3,
+  "txHash": "0xf66a7283143e1a29dde4d90058ccebce1e5cb6e3b00ab3f400bd90e6835bdd7f",
+  "explorerUrl": "https://www.oklink.com/xlayer/tx/0xf66a7283143e1a29dde4d90058ccebce1e5cb6e3b00ab3f400bd90e6835bdd7f",
+  "note": "Executed OKB -> USDT0 via Uniswap V4."
+}

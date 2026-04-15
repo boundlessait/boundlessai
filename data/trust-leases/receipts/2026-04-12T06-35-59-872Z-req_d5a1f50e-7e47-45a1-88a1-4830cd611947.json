@@ -1,0 +1,9 @@
+{
+  "generatedAt": "2026-04-12T06:35:59.872Z",
+  "leaseId": "lease_7997019c-c5b8-4b8a-9104-589ba18ca3ae",
+  "requestId": "req_d5a1f50e-7e47-45a1-88a1-4830cd611947",
+  "consumerName": "strategy-office",
+  "status": "blocked",
+  "spentUsd": 0,
+  "note": "No material allocation drift produced a leaseable request in this round."
+}

@@ -1,0 +1,8 @@
+{
+  "operatorName": "human-principal",
+  "mode": "review",
+  "lastCommand": "review",
+  "note": "ui operator-console smoke test",
+  "updatedAt": "2026-04-15T01:27:25.108Z",
+  "command": "review"
+}

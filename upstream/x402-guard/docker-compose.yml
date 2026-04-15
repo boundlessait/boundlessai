@@ -1,0 +1,48 @@
+version: "3.9"
+
+services:
+
+  # ── Backend — FastAPI / Python 3.11 ─────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: x402-guard-backend:latest
+    container_name: x402-guard-backend
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      PORT: "4402"
+      DEV: "false"
+    ports:
+      - "4402:4402"
+    volumes:
+      - ./backend/data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4402/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ── Frontend — Next.js / Node 20 ─────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: x402-guard-frontend:latest
+    container_name: x402-guard-frontend
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NEXT_PUBLIC_API_URL: "http://backend:4402"
+      PORT: "3000"
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+networks:
+  default:
+    name: x402-guard-net

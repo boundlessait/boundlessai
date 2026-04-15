@@ -1,0 +1,13 @@
+{
+  "name": "leigent-portfolio-agent",
+  "version": "1.0.0",
+  "description": "Autonomous DeFi portfolio builder on X Layer — natural language-driven AI agent for intelligent asset management and rebalancing",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "test": "node test/test.js"
+  },
+  "keywords": ["defi", "portfolio", "xlayer", "onchainos", "agent", "autonomous"],
+  "license": "MIT"
+}

@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "x402guard": {
+      "command": "python3",
+      "args": ["mcp_server.py"],
+      "env": {
+        "X402_GUARD_URL": "http://localhost:4402"
+      },
+      "description": "x402 Guard — AI Bot Spending Firewall. Enforces spending limits on every payment."
+    }
+  }
+}

@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Boundless Dashboard Preview</title>
+  <style>
+    :root {
+      --bg: #000;
+      --bg2: #0a0a0a;
+      --white: #fff;
+      --s1: #a1a1aa;
+      --s2: #71717a;
+      --border: #27272a;
+      --card: #000;
+      --card2: #18181b;
+      --lime: #d9f99d;
+      --green: #22c55e;
+      --amber: #f59e0b;
+      --mono: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--white); font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif; }
+    .app { max-width: 1180px; margin: 0 auto; min-height: 100vh; padding: 24px; }
+    .topbar {
+      display: flex; justify-content: space-between; padding: 12px 16px;
+      border: 1px solid var(--border); border-radius: 12px; margin-bottom: 16px; background: var(--bg2);
+      font-size: 12px; color: var(--s1);
+    }
+    .header {
+      display: flex; justify-content: space-between; align-items: center;
+      border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; margin-bottom: 16px;
+      background: var(--card);
+    }
+    .brand { display: flex; gap: 12px; align-items: center; }
+    .logo {
+      width: 40px; height: 40px; border-radius: 10px; background: var(--lime);
+      color: #000; font-weight: 800; display: grid; place-items: center;
+    }
+    .brand h1 { font-size: 18px; }
+    .sub { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--s2); margin-top: 2px; }
+    .nav { display: flex; gap: 10px; align-items: center; }
+    .pill {
+      border: 1px solid var(--border); border-radius: 999px; padding: 8px 12px; font-size: 12px; color: var(--s1);
+      background: var(--card2);
+    }
+    .wallet {
+      border: 1px solid rgba(217,249,157,.45); background: rgba(217,249,157,.1); color: var(--lime);
+      border-radius: 8px; padding: 10px 12px; font-size: 12px; font-weight: 700;
+    }
+    .card {
+      border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 14px; background: var(--card);
+    }
+    .card h2 { font-size: 17px; margin-bottom: 8px; }
+    .card p { font-size: 13px; color: var(--s1); line-height: 1.6; }
+    .steps { margin-top: 10px; padding-left: 18px; color: var(--s1); font-size: 13px; line-height: 1.8; }
+    .stack { margin-top: 10px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .row {
+      display: flex; justify-content: space-between; gap: 14px; padding: 12px 14px;
+      border-bottom: 1px solid var(--border); background: rgba(255,255,255,.01);
+    }
+    .row:last-child { border-bottom: none; }
+    .k { color: var(--s2); font-size: 12px; }
+    .v { font-size: 13px; font-weight: 600; text-align: right; }
+    .mono { font-family: var(--mono); font-size: 12px; }
+    .console-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 12px; }
+    .input {
+      border: 1px solid #3f3f46; border-radius: 8px; background: var(--card2); color: var(--white);
+      padding: 11px 12px; font-size: 13px;
+    }
+    .btn-row { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 12px; }
+    .btn {
+      border: 1px solid var(--border); border-radius: 8px; background: var(--card2);
+      color: var(--white); padding: 10px 12px; text-align: left; font-size: 13px; font-weight: 700;
+    }
+    .btn.primary { background: var(--lime); color: #000; border-color: transparent; }
+    .hint {
+      margin-top: 10px; border: 1px solid rgba(34,197,94,.28); color: var(--green);
+      border-radius: 8px; padding: 10px 12px; font-size: 12px; background: rgba(34,197,94,.12);
+    }
+    .advanced summary { cursor: pointer; color: var(--lime); font-weight: 700; font-size: 14px; }
+    table { width: 100%; margin-top: 12px; border-collapse: collapse; }
+    th,td { border-bottom: 1px solid var(--border); padding: 10px; font-size: 12px; text-align: left; }
+    th { color: var(--s2); font-size: 11px; text-transform: uppercase; }
+    @media (max-width: 760px) {
+      .header { flex-direction: column; align-items: flex-start; gap: 10px; }
+      .row { flex-direction: column; }
+      .v { text-align: left; }
+      .nav { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div>Network: X Layer 196</div>
+      <div>Product: Boundless</div>
+    </div>
+
+    <header class="header">
+      <div class="brand">
+        <div class="logo">B</div>
+        <div>
+          <h1>Boundless</h1>
+          <div class="sub">Agent Execution Guard</div>
+        </div>
+      </div>
+      <div class="nav">
+        <div class="pill">Home</div>
+        <div class="pill">Dashboard</div>
+        <div class="pill">Proof</div>
+        <div class="wallet">0x3b38...767d</div>
+      </div>
+    </header>
+
+    <section class="card">
+      <h2>Quick Start</h2>
+      <p>Boundless — Let agents run, within your rules, budget, and verifiable proof.</p>
+      <ol class="steps">
+        <li>Connect a wallet on top-right.</li>
+        <li>Set max per action, daily budget, assets, and protocols.</li>
+        <li>Save rule onchain.</li>
+        <li>Watch approved tx or blocked reason as proof.</li>
+      </ol>
+    </section>
+
+    <section class="card">
+      <h2>Current Live Rule</h2>
+      <div class="stack">
+        <div class="row"><span class="k">Protected Wallet</span><span class="v mono">0x3b388c85...c1767d</span></div>
+        <div class="row"><span class="k">Rule ID</span><span class="v mono">lease_f182b6...59d4ad</span></div>
+        <div class="row"><span class="k">Max Per Action</span><span class="v">$1.00</span></div>
+        <div class="row"><span class="k">Daily Budget</span><span class="v">$15.00</span></div>
+        <div class="row"><span class="k">Allowed Assets</span><span class="v">USDT0, USDC, OKB</span></div>
+        <div class="row"><span class="k">Allowed Protocols</span><span class="v">okx-aggregator, quickswap</span></div>
+        <div class="row"><span class="k">If Agent Requests Now</span><span class="v">Next request should wait for human review.</span></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Rule Console</h2>
+      <p>Set the rule first, then save it onchain. Operator controls stay below.</p>
+      <div class="console-grid">
+        <input class="input" value="Governed wallet: 0x3b388c85b745..." />
+        <input class="input" value="Per-Tx Limit (USD): 1" />
+        <input class="input" value="Daily Budget (USD): 15" />
+        <input class="input" value="Allowed Assets: USDT0,USDC,OKB" />
+        <input class="input" value="Allowed Protocols: okx-aggregator,quickswap" />
+      </div>
+      <div class="btn-row">
+        <button class="btn primary">Save Rule</button>
+        <button class="btn">Pause</button>
+        <button class="btn">Review</button>
+        <button class="btn">Resume</button>
+        <button class="btn">Run Round</button>
+        <button class="btn">Refresh Proof</button>
+      </div>
+      <div class="hint">Operator moved to review mode.</div>
+    </section>
+
+    <section class="card">
+      <h2>Latest Proof Snapshot</h2>
+      <div class="stack">
+        <div class="row"><span class="k">Decision</span><span class="v">Block</span></div>
+        <div class="row"><span class="k">Reason</span><span class="v">No Trade Candidate</span></div>
+        <div class="row"><span class="k">Request</span><span class="v">USDT0 → USDC</span></div>
+        <div class="row"><span class="k">Allowed Notional</span><span class="v">$0.00</span></div>
+        <div class="row"><span class="k">Tx Hash</span><span class="v mono">—</span></div>
+      </div>
+    </section>
+
+    <details class="card advanced" open>
+      <summary>Advanced History (Optional)</summary>
+      <table>
+        <thead><tr><th>Time</th><th>Outcome</th><th>Tx</th><th>Summary</th></tr></thead>
+        <tbody>
+          <tr><td>Apr 14, 12:16</td><td>Block</td><td>—</td><td>outcome=block | zone=yellow</td></tr>
+          <tr><td>Apr 14, 12:15</td><td>Approve</td><td>0xd956...fece</td><td>outcome=approve | zone=green</td></tr>
+        </tbody>
+      </table>
+    </details>
+  </div>
+</body>
+</html>

@@ -1,0 +1,154 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "/Users/yanqing/Documents/GitHub/miraix-interface/projects/xlayer-trust-leases/contracts/contracts/TrustLeaseController.sol": {
+      "lastModificationDate": 1776244669509,
+      "contentHash": "462796c5320b7faa9606bfa73ca0af56",
+      "sourceName": "contracts/TrustLeaseController.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "viaIR": true,
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "TrustLeaseController"
+      ]
+    },
+    "/Users/yanqing/Documents/GitHub/miraix-interface/projects/xlayer-trust-leases/contracts/contracts/BoundlessVault.sol": {
+      "lastModificationDate": 1776245996387,
+      "contentHash": "bc73671118b0c46e39a21876e0ef2d14",
+      "sourceName": "contracts/BoundlessVault.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "viaIR": true,
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "BoundlessVault",
+        "ITrustLeaseController"
+      ]
+    },
+    "/Users/yanqing/Documents/GitHub/miraix-interface/projects/xlayer-trust-leases/contracts/contracts/MockERC20.sol": {
+      "lastModificationDate": 1776246237717,
+      "contentHash": "a6e3b4cadf796a3e14c6ae0703634374",
+      "sourceName": "contracts/MockERC20.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "viaIR": true,
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "MockERC20"
+      ]
+    },
+    "/Users/yanqing/Documents/GitHub/miraix-interface/projects/xlayer-trust-leases/contracts/contracts/MockProtocolTarget.sol": {
+      "lastModificationDate": 1776246244819,
+      "contentHash": "547dd9f9a0138b323403f3fd44891dc3",
+      "sourceName": "contracts/MockProtocolTarget.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "viaIR": true,
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "MockProtocolTarget"
+      ]
+    }
+  }
+}

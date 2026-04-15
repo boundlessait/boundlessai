@@ -1,0 +1,9 @@
+{
+  "generatedAt": "2026-04-14T12:04:43.864Z",
+  "leaseId": "lease_7997019c-c5b8-4b8a-9104-589ba18ca3ae",
+  "requestId": "req_px-1776168283859",
+  "consumerName": "strategy-office",
+  "status": "blocked",
+  "spentUsd": 0,
+  "note": "Execution blocked by quorum outcome: reject."
+}

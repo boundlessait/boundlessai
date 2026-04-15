@@ -1,0 +1,13 @@
+[Unit]
+Description=X Layer Trust Leases runtime round
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/xlayer-trust-leases
+EnvironmentFile=/opt/xlayer-trust-leases/.env.local
+ExecStart=/usr/bin/env bash -lc 'cd /opt/xlayer-trust-leases && npm run round:live && npm run proof:render >> /var/log/xlayer-trust-leases.log 2>&1'
+
+[Install]
+WantedBy=multi-user.target

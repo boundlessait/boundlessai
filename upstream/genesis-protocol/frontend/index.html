@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Genesis Protocol - AI 驱动的 Uniswap V4 Hook 策略引擎 | X Layer</title>
+<meta name="description" content="Genesis Protocol - AI-driven Uniswap V4 Hook strategy engine on X Layer. Intelligent DeFi strategies powered by a 5-layer cognitive AI agent.">
+<meta name="keywords" content="Genesis Protocol, Uniswap V4, Hook, AI, DeFi, X Layer, OKX, strategy, NFT, x402">
+<meta property="og:title" content="Genesis Protocol - AI Uniswap V4 Hook Strategy Engine">
+<meta property="og:description" content="AI-driven Uniswap V4 Hook strategy engine on X Layer. 5-layer cognitive AI agent for intelligent DeFi strategies.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://genesis-protocol.xyz">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.9.0/dist/ethers.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@300;400;500;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/src/styles/main.css">
+</head>
+<body class="bg-[#0a0e1a] text-gray-200 font-mono overflow-x-hidden">
+<!-- Nav -->
+<nav class="fixed top-0 w-full z-50 bg-[#0a0e1a]/90 backdrop-blur border-b border-gray-800/50">
+<div class="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
+<a href="#" class="orb text-sm font-bold text-[var(--neon)]">GENESIS</a>
+<div class="hidden md:flex gap-6 text-xs text-gray-400">
+<a href="#market" class="hover:text-[var(--neon)]">市场感知</a>
+<a href="#ai-engine" class="hover:text-[var(--neon)]">AI 引擎</a>
+<a href="#ai-decision" class="hover:text-[var(--neon)]">AI 决策</a>
+<a href="#dashboard" class="hover:text-[var(--neon)]">仪表盘</a>
+<a href="#backtest" class="hover:text-[var(--neon)]">回测</a>
+<a href="#strategies" class="hover:text-[var(--neon)]">策略管理</a>
+<a href="#nfts" class="hover:text-[var(--neon)]">策略 NFT</a>
+<a href="#x402" class="hover:text-[var(--neon)]">x402</a>
+</div>
+<div class="flex items-center gap-3">
+<span id="network-badge" class="badge text-gray-500">未连接</span>
+<button id="lang-btn" class="text-xs text-gray-400 hover:text-[var(--neon)] border border-gray-700 rounded px-2 py-1">EN/中</button>
+<button id="connect-btn" class="neon-btn text-xs py-2 px-4">连接钱包</button>
+<button id="mobile-menu-btn" class="md:hidden text-gray-400 hover:text-[var(--neon)] p-1" aria-label="Toggle menu">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+</button>
+</div>
+</div>
+<!-- Mobile nav dropdown -->
+<div id="mobile-menu" class="hidden md:hidden bg-[#0a0e1a]/95 border-b border-gray-800/50 px-4 pb-3">
+<div class="flex flex-col gap-3 text-xs text-gray-400 pt-2">
+<a href="#market" class="hover:text-[var(--neon)]">市场感知</a>
+<a href="#ai-engine" class="hover:text-[var(--neon)]">AI 引擎</a>
+<a href="#ai-decision" class="hover:text-[var(--neon)]">AI 决策</a>
+<a href="#dashboard" class="hover:text-[var(--neon)]">仪表盘</a>
+<a href="#backtest" class="hover:text-[var(--neon)]">回测</a>
+<a href="#strategies" class="hover:text-[var(--neon)]">策略管理</a>
+<a href="#nfts" class="hover:text-[var(--neon)]">策略 NFT</a>
+<a href="#x402" class="hover:text-[var(--neon)]">x402</a>
+</div>
+</div>
+</nav>
+<script>
+document.getElementById('mobile-menu-btn').addEventListener('click',function(){document.getElementById('mobile-menu').classList.toggle('hidden')});
+document.querySelectorAll('#mobile-menu a').forEach(function(a){a.addEventListener('click',function(){document.getElementById('mobile-menu').classList.add('hidden')})});
+</script>
+<!-- Hero -->
+<section class="relative min-h-[70vh] flex items-center justify-center grid-bg pt-14" id="hero">
+<div class="text-center px-4">
+<p class="text-[var(--neon)] text-xs tracking-[.3em] mb-3 opacity-80">OKX BUILD X HACKATHON 2026</p>
+<h1 class="text-5xl md:text-7xl font-black glow mb-4 orb hero-title">GENESIS<br>PROTOCOL</h1>
+<p class="text-base text-gray-400 max-w-xl mx-auto mb-6" data-i18n="heroSub">面向 X Layer 的 AI 驱动 Uniswap V4 Hook 策略引擎</p>
+<div class="flex gap-3 justify-center flex-wrap mb-6">
+<button id="hero-connect-btn" class="neon-btn">连接钱包</button>
+<a href="#dashboard" class="outline-btn">查看仪表盘</a>
+<button id="tour-btn" class="outline-btn" style="border-color:#a855f7;color:#a855f7">3分钟体验</button>
+</div>
+<div class="flex gap-4 justify-center flex-wrap">
+<span class="badge"><span class="w-2 h-2 rounded-full bg-cyan-400 pulse"></span> Onchain OS 驱动</span>
+<span class="badge"><span class="w-2 h-2 rounded-full bg-pink-400 pulse"></span> Uniswap V4</span>
+<span class="badge"><span class="w-2 h-2 rounded-full bg-purple-400 pulse"></span> X Layer</span>
+</div>
+</div>
+</section>
+<!-- Market Intelligence -->
+<section class="max-w-6xl mx-auto px-4 py-16" id="market">
+<div class="flex items-center justify-between mb-8">
+<h2 class="text-2xl font-bold glow orb" data-i18n="marketTitle">AI 市场感知层</h2>
+<div class="flex items-center gap-3">
+<span id="market-source-badge" class="data-src sim">加载中...</span>
+<span id="market-status" class="text-xs text-gray-500">连接中...</span>
+</div>
+</div>
+<!-- Price Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+<div class="card p-5">
+<div class="flex justify-between items-start mb-2"><span class="text-xs text-gray-500">ETH / USDT</span><span id="eth-change" class="text-xs">--</span></div>
+<p class="text-2xl font-black text-[var(--neon)] orb" id="eth-price">--</p>
+<div class="flex justify-between text-xs text-gray-600 mt-2"><span>24h高: <span id="eth-high">--</span></span><span>24h低: <span id="eth-low">--</span></span></div>
+</div>
+<div class="card p-5">
+<div class="flex justify-between items-start mb-2"><span class="text-xs text-gray-500">BTC / USDT</span><span id="btc-change" class="text-xs">--</span></div>
+<p class="text-2xl font-black text-yellow-400 orb" id="btc-price">--</p>
+<div class="flex justify-between text-xs text-gray-600 mt-2"><span>24h高: <span id="btc-high">--</span></span><span>24h低: <span id="btc-low">--</span></span></div>
+</div>
+<div class="card p-5">
+<div class="flex justify-between items-start mb-2"><span class="text-xs text-gray-500">OKB / USDT</span><span id="okb-change" class="text-xs">--</span></div>
+<p class="text-2xl font-black text-[var(--purple)] orb" id="okb-price">--</p>
+<div class="flex justify-between text-xs text-gray-600 mt-2"><span>24h高: <span id="okb-high">--</span></span><span>24h低: <span id="okb-low">--</span></span></div>
+</div>
+</div>
+<!-- Volatility + Regime + Funding -->
+<div class="grid md:grid-cols-3 gap-4 mb-6">
+<div class="card p-5">
+<p class="text-xs text-gray-500 mb-2">ETH 波动率 (1H x20)</p>
+<p class="text-xl font-bold" id="vol-value">--</p>
+<div class="w-full bg-gray-800 rounded-full h-2 mt-2"><div id="vol-bar" class="h-2 rounded-full bg-[var(--neon)]" style="width:0%"></div></div>
+<p class="text-xs mt-1" id="vol-regime">计算中...</p>
+</div>
+<div class="card p-5">
+<p class="text-xs text-gray-500 mb-2">市场区间判断</p>
+<p class="text-xl font-bold orb" id="regime-label">--</p>
+<p class="text-xs text-gray-500 mt-2">推荐预设: <span id="regime-preset" class="text-[var(--neon)]">--</span></p>
+<p class="text-xs text-gray-500">推荐费率: <span id="regime-fee" class="text-gray-300">--</span></p>
+</div>
+<div class="card p-5">
+<p class="text-xs text-gray-500 mb-2">ETH 永续合约资金费率</p>
+<p class="text-xl font-bold" id="funding-value">--</p>
+<p class="text-xs mt-2" id="funding-sentiment">--</p>
+</div>
+</div>
+<!-- Price Chart -->
+<div class="card p-5">
+<p class="text-xs text-gray-500 mb-2">ETH-USDT 价格走势 <span class="text-gray-600">(1H K线)</span></p>
+<div id="chart-price" class="chart-responsive" style="height:220px"></div>
+</div>
+</section>
+<!-- AI Cognitive Engine -->
+<section class="max-w-6xl mx-auto px-4 py-16" id="ai-engine">
+<h2 class="text-2xl font-bold glow-p orb mb-8" data-i18n="aiTitle">AI 认知引擎</h2>
+<div class="card p-6 mb-6">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-sm font-bold text-[var(--purple)] orb">5 层认知循环</h3>
+<button id="cycle-btn" class="neon-btn text-xs py-2 px-4">启动认知循环</button>
+</div>
+<div class="grid grid-cols-5 gap-2 mb-4">
+<div id="layer-1" class="text-center p-3 rounded-lg bg-gray-900/50 border border-gray-800"><p class="text-xs text-gray-500">L1</p><p class="text-[10px] font-bold">感知</p><div class="w-2 h-2 rounded-full bg-gray-700 mx-auto mt-1" id="dot-1"></div></div>
+<div id="layer-2" class="text-center p-3 rounded-lg bg-gray-900/50 border border-gray-800"><p class="text-xs text-gray-500">L2</p><p class="text-[10px] font-bold">分析</p><div class="w-2 h-2 rounded-full bg-gray-700 mx-auto mt-1" id="dot-2"></div></div>
+<div id="layer-3" class="text-center p-3 rounded-lg bg-gray-900/50 border border-gray-800"><p class="text-xs text-gray-500">L3</p><p class="text-[10px] font-bold">规划</p><div class="w-2 h-2 rounded-full bg-gray-700 mx-auto mt-1" id="dot-3"></div></div>
+<div id="layer-4" class="text-center p-3 rounded-lg bg-gray-900/50 border border-gray-800"><p class="text-xs text-gray-500">L4</p><p class="text-[10px] font-bold">进化</p><div class="w-2 h-2 rounded-full bg-gray-700 mx-auto mt-1" id="dot-4"></div></div>
+<div id="layer-5" class="text-center p-3 rounded-lg bg-gray-900/50 border border-gray-800"><p class="text-xs text-gray-500">L5</p><p class="text-[10px] font-bold">元认知</p><div class="w-2 h-2 rounded-full bg-gray-700 mx-auto mt-1" id="dot-5"></div></div>
+</div>
+<div id="cycle-log" class="bg-black/40 rounded-lg p-4 font-mono text-xs max-h-64 overflow-y-auto" style="line-height:1.8">
+<p class="text-gray-600">点击「启动认知循环」查看 AI 引擎实时推理过程...</p>
+</div>
+</div>
+<!-- AI Recommendation -->
+<div class="grid md:grid-cols-2 gap-4">
+<div class="card p-5">
+<p class="text-xs text-gray-500 mb-2">AI 推荐操作</p>
+<p class="text-sm font-bold" id="ai-action">等待认知循环...</p>
+<div class="mt-3 space-y-1" id="ai-details"></div>
+</div>
+<div class="card p-5">
+<p class="text-xs text-gray-500 mb-2">DEX 聚合报价 (OKB &rarr; USDT)</p>
+<div id="dex-quote" class="space-y-1">
+<p class="text-xs text-gray-600">启动认知循环后自动获取...</p>
+</div>
+</div>
+</div>
+</section>
+<!-- AI Decision Panel -->
+<section class="max-w-6xl mx-auto px-4 py-16" id="ai-decision">
+<h2 class="text-2xl font-bold glow orb mb-8" data-i18n="aiDecisionTitle">AI 决策面板</h2>
+<!-- LLM Reasoning Display -->
+<div class="card p-6 mb-6">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-sm font-bold text-[var(--neon)] orb">LLM 推理链</h3>
+<span id="reasoning-timestamp" class="text-xs text-gray-600">等待认知循环...</span>
+</div>
+<div class="reasoning-chain mb-4" id="reasoning-chain">
+<span class="reasoning-step" id="rstep-data">Market Data</span>
+<span class="reasoning-arrow">&rarr;</span>
+<span class="reasoning-step" id="rstep-analysis">Analysis</span>
+<span class="reasoning-arrow">&rarr;</span>
+<span class="reasoning-step" id="rstep-strategy">Strategy Selection</span>
+<span class="reasoning-arrow">&rarr;</span>
+<span class="reasoning-step" id="rstep-confidence">Confidence Score</span>
+</div>
+<div id="llm-reasoning-display" class="bg-black/40 rounded-lg p-4 font-mono text-xs max-h-48 overflow-y-auto" style="line-height:1.8">
+<p class="text-gray-600">运行认知循环后，此处将显示 AI 实时推理过程...</p>
+</div>
+</div>
+<!-- Decision Confidence + Regime + Recommendation -->
+<div class="grid md:grid-cols-3 gap-4 mb-6">
+<div class="card p-5 flex flex-col items-center">
+<p class="text-xs text-gray-500 mb-3">决策置信度</p>
+<div class="confidence-gauge" id="confidence-gauge">
+<div class="gauge-bg"></div>
+<div class="gauge-fill" id="gauge-fill"></div>
+<div class="gauge-needle" id="gauge-needle"></div>
+<div class="gauge-label text-gray-400" id="gauge-label">--</div>
+</div>
+<p class="text-xs text-gray-500 mt-2" id="confidence-desc">等待数据...</p>
+</div>
+<div class="card p-5">
+<p class="text-xs text-gray-500 mb-3">当前市场区间</p>
+<div id="decision-regime-indicator" class="regime-indicator regime-calm mb-3">
+<span class="w-3 h-3 rounded-full bg-gray-600" id="regime-dot"></span>
+<span id="regime-text">检测中...</span>
+</div>
+<div class="space-y-2 text-xs" id="regime-details">
+<p class="text-gray-500">波动率: <span class="text-white" id="decision-vol">--</span></p>
+<p class="text-gray-500">趋势方向: <span class="text-white" id="decision-trend">--</span></p>
+<p class="text-gray-500">Bayesian 概率: <span class="text-white" id="decision-bayesian">--</span></p>
+</div>
+</div>
+<div class="card p-5">
+<p class="text-xs text-gray-500 mb-3">策略推荐</p>
+<p class="text-sm font-bold orb" id="decision-recommendation">等待认知循环...</p>
+<p class="text-xs text-gray-400 mt-2" id="decision-rationale">--</p>
+<div class="mt-3">
+<div class="why-expand text-xs text-gray-500" id="why-toggle">
+<span>&#9654; 为什么推荐此策略?</span>
+</div>
+<div class="why-content" id="why-content">
+<div class="mt-2 p-3 bg-black/30 rounded text-xs text-gray-400 space-y-1" id="why-details">
+<p>等待认知循环完成...</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Agent Service Status -->
+<section class="max-w-6xl mx-auto px-4 py-8" id="agent-service">
+<div class="card p-6">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-sm font-bold text-green-400 orb">Agent 持续运行服务</h3>
+<div class="flex items-center gap-2">
+<span id="agent-live-dot" class="w-2 h-2 rounded-full bg-gray-600"></span>
+<span id="agent-status-text" class="text-xs text-gray-500">检测中...</span>
+</div>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+<div class="bg-black/30 rounded-lg p-3 text-center">
+<p class="text-lg font-bold text-green-400 orb" id="agent-cycles">--</p>
+<p class="text-[10px] text-gray-500">认知循环</p>
+</div>
+<div class="bg-black/30 rounded-lg p-3 text-center">
+<p class="text-lg font-bold text-[var(--neon)] orb" id="agent-accuracy">--</p>
+<p class="text-[10px] text-gray-500">预测准确率</p>
+</div>
+<div class="bg-black/30 rounded-lg p-3 text-center">
+<p class="text-lg font-bold text-[var(--purple)] orb" id="agent-regime">--</p>
+<p class="text-[10px] text-gray-500">Bayesian Regime</p>
+</div>
+<div class="bg-black/30 rounded-lg p-3 text-center">
+<p class="text-lg font-bold text-yellow-400 orb" id="agent-momentum">--</p>
+<p class="text-[10px] text-gray-500">动量信号</p>
+</div>
+<div class="bg-black/30 rounded-lg p-3 text-center">
+<p class="text-lg font-bold text-cyan-300 orb" id="agent-risk">--</p>
+<p class="text-[10px] text-gray-500">风险容忍度</p>
+</div>
+</div>
+<div class="mt-3 grid md:grid-cols-2 gap-3">
+<div class="bg-black/30 rounded-lg p-3">
+<p class="text-[10px] text-gray-500 mb-1">ML 模型状态</p>
+<div class="space-y-1 text-xs" id="agent-ml-status">
+<p class="text-gray-600">加载中...</p>
+</div>
+</div>
+<div class="bg-black/30 rounded-lg p-3">
+<p class="text-[10px] text-gray-500 mb-1">偏好参数 (在线学习)</p>
+<div class="space-y-1 text-xs" id="agent-preferences">
+<p class="text-gray-600">加载中...</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Dashboard -->
+<section class="max-w-6xl mx-auto px-4 py-16" id="dashboard">
+<div class="flex items-center justify-between mb-8">
+<h2 class="text-2xl font-bold glow orb" data-i18n="dashTitle">实时仪表盘</h2>
+<div class="flex items-center gap-3">
+<span class="live-dot"></span>
+<span id="refresh-status" class="text-xs text-gray-500">正在连接链上数据...</span>
+</div>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+<div class="card p-5 text-center"><p class="text-3xl font-black text-[var(--neon)] orb" id="stat-strategies"><span class="skeleton skeleton-lg"></span></p><p class="text-xs text-gray-500 mt-1">已创建策略</p></div>
+<div class="card p-5 text-center"><p class="text-3xl font-black text-[var(--purple)] orb" id="stat-decisions"><span class="skeleton skeleton-lg"></span></p><p class="text-xs text-gray-500 mt-1">决策记录</p></div>
+<div class="card p-5 text-center"><p class="text-3xl font-black text-green-400 orb" id="stat-swaps"><span class="skeleton skeleton-lg"></span></p><p class="text-xs text-gray-500 mt-1">已处理 Swap</p></div>
+<div class="card p-5 text-center"><p class="text-3xl font-black text-yellow-400 orb" id="stat-nfts"><span class="skeleton skeleton-lg"></span></p><p class="text-xs text-gray-500 mt-1">已铸造 NFT</p></div>
+</div>
+<div class="grid md:grid-cols-2 gap-4 mb-8">
+<div class="card p-5"><p class="text-xs text-gray-500 mb-1">总处理交易量</p><p class="text-xl font-bold text-[var(--neon)]" id="stat-volume">--</p></div>
+<div class="card p-5"><p class="text-xs text-gray-500 mb-1">合约部署时间</p><p class="text-xl font-bold text-gray-300" id="stat-deployed">--</p></div>
+</div>
+<!-- Cross-Protocol Integration Status -->
+<div class="card p-5 mb-8">
+<p class="text-xs text-gray-500 mb-3">跨协议集成状态</p>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="protocol-status-grid">
+<div class="protocol-status">
+<span class="status-dot online" id="proto-uniswap-dot"></span>
+<div><p class="text-white font-bold text-xs">Uniswap V4</p><p class="text-gray-500 text-[10px]" id="proto-uniswap-status">Connected</p></div>
+</div>
+<div class="protocol-status">
+<span class="status-dot online" id="proto-okx-dot"></span>
+<div><p class="text-white font-bold text-xs">OKX DEX Aggregator</p><p class="text-gray-500 text-[10px]" id="proto-okx-status">Live</p></div>
+</div>
+<div class="protocol-status">
+<span class="status-dot online" id="proto-onchain-dot"></span>
+<div><p class="text-white font-bold text-xs">OnchainOS Wallet</p><p class="text-gray-500 text-[10px]" id="proto-onchain-status">Active</p></div>
+</div>
+<div class="protocol-status">
+<span class="status-dot online" id="proto-x402-dot"></span>
+<div><p class="text-white font-bold text-xs">x402 Payment</p><p class="text-gray-500 text-[10px]" id="proto-x402-status">Enabled</p></div>
+</div>
+</div>
+</div>
+<div class="card p-5">
+<p class="text-xs text-gray-500 mb-3">协议累计指标 <span class="text-gray-600">(链上实时数据)</span></p>
+<div id="chart-activity" class="chart-responsive" style="height:220px"></div>
+</div>
+<!-- On-Chain Activity (Real Data) -->
+<div class="mt-8">
+<h3 class="text-sm font-bold text-[var(--neon)] orb mb-4">链上活动（已验证）<span class="text-gray-600 text-xs font-normal">合约实时读取</span></h3>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<div class="card p-5 text-center"><p class="text-3xl font-black text-[var(--neon)] orb" id="verified-strategies">--</p><p class="text-xs text-gray-500 mt-1">已创建策略</p></div>
+<div class="card p-5 text-center"><p class="text-3xl font-black text-[var(--purple)] orb" id="verified-decisions">--</p><p class="text-xs text-gray-500 mt-1">决策日志条目</p></div>
+<div class="card p-5 text-center"><p class="text-3xl font-black text-yellow-400 orb" id="verified-nfts">--</p><p class="text-xs text-gray-500 mt-1">已铸造策略 NFT</p></div>
+<div class="card p-5 text-center"><p class="text-3xl font-black text-green-400 orb" id="verified-swaps">--</p><p class="text-xs text-gray-500 mt-1">已处理 Swap</p></div>
+</div>
+</div>
+<!-- Recent Transactions -->
+<div class="mt-8">
+<h3 class="text-sm font-bold text-[var(--purple)] orb mb-4">最近交易</h3>
+<div id="recent-tx-list" class="space-y-2">
+<div class="text-center py-4 text-gray-600 text-xs">正在加载最近交易...</div>
+</div>
+<div class="mt-3 text-center">
+<a href="https://www.oklink.com/xlayer/address/0xC5E851fEC9188DD4F6cCB2Ebc134b33210D4aC78" target="_blank" class="text-xs text-[var(--neon)] hover:underline">在 X Layer 浏览器查看所有交易 &rarr;</a>
+</div>
+</div>
+</section>
+<!-- Activity Timeline -->
+<section class="max-w-6xl mx-auto px-4 py-16" id="activity-timeline">
+<h2 class="text-2xl font-bold glow orb mb-8" data-i18n="timelineTitle">链上活动时间线</h2>
+<div class="card p-6">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-sm font-bold text-[var(--neon)] orb">全部链上操作 <span class="text-gray-600 text-xs font-normal">按时间排序</span></h3>
+<div class="flex gap-2 flex-wrap">
+<span class="ttype-create text-[10px] px-2 py-0.5 rounded">策略创建</span>
+<span class="ttype-decision text-[10px] px-2 py-0.5 rounded">决策记录</span>
+<span class="ttype-nft text-[10px] px-2 py-0.5 rounded">NFT 铸造</span>
+<span class="ttype-rebalance text-[10px] px-2 py-0.5 rounded">再平衡</span>
+</div>
+</div>
+<div id="activity-timeline-list" class="max-h-[400px] overflow-y-auto">
+<div class="text-center py-8 text-gray-600 text-xs">正在从链上加载活动记录...</div>
+</div>
+</div>
+</section>
+<!-- Backtest Results Panel -->
+<section class="max-w-6xl mx-auto px-4 py-16" id="backtest">
+<h2 class="text-2xl font-bold glow-p orb mb-8" data-i18n="backtestTitle">回测分析</h2>
+<div class="grid md:grid-cols-4 gap-4 mb-6">
+<div class="metric-card"><p class="metric-value text-[var(--neon)]" id="bt-sharpe">1.42</p><p class="metric-label">Sharpe Ratio</p></div>
+<div class="metric-card"><p class="metric-value text-red-400" id="bt-drawdown">-8.3%</p><p class="metric-label">Max Drawdown</p></div>
+<div class="metric-card"><p class="metric-value text-green-400" id="bt-winrate">63.2%</p><p class="metric-label">Win Rate</p></div>
+<div class="metric-card"><p class="metric-value text-yellow-400" id="bt-return">+24.7%</p><p class="metric-label">Total Return</p></div>
+</div>
+<div class="grid md:grid-cols-2 gap-4">
+<div class="card p-5">
+<p class="text-xs text-gray-500 mb-3">预设策略回测对比</p>
+<div id="chart-backtest" class="chart-responsive" style="height:260px"></div>
+</div>
+<div class="card p-5">
+<p class="text-xs text-gray-500 mb-3">市场区间分布</p>
+<div id="chart-regime-pie" class="chart-responsive" style="height:260px"></div>
+</div>
+</div>
+</section>
+<!-- Strategy Manager -->
+<section class="max-w-6xl mx-auto px-4 py-16" id="strategies">
+<h2 class="text-2xl font-bold glow orb mb-8" data-i18n="stratTitle">策略管理器</h2>
+<div class="card p-6 mb-8">
+<h3 class="text-sm font-bold text-[var(--neon)] mb-4 orb">创建新策略</h3>
+<div class="grid md:grid-cols-3 gap-4 mb-4">
+<div>
+<label class="text-xs text-gray-500 block mb-1">预设</label>
+<select id="preset-select">
+<option value="calm">稳健积累型</option>
+<option value="volatile" selected>波动防御型</option>
+<option value="trend">趋势跟踪型</option>
+<option value="balanced">均衡型</option>
+</select>
+</div>
+<div>
+<label class="text-xs text-gray-500 block mb-1">模块组合</label>
+<div id="modules-display" class="text-xs text-gray-300 py-2">DynamicFee + MEV + AutoRebalance</div>
+</div>
+<div>
+<label class="text-xs text-gray-500 block mb-1">风险等级</label>
+<div id="risk-display" class="text-xs py-2"><span class="text-yellow-400">防御型</span></div>
+</div>
+</div>
+<div class="flex gap-3">
+<button id="deploy-btn" class="neon-btn text-xs" disabled>部署策略（请先连接钱包）</button>
+<button id="simulate-btn" class="outline-btn text-xs">模拟运行</button>
+</div>
+<div id="deploy-status" class="text-xs text-gray-500 mt-3 hidden"></div>
+</div>
+<!-- Active Strategies Table -->
+<div class="card p-6">
+<h3 class="text-sm font-bold text-[var(--neon)] mb-4 orb">活跃策略</h3>
+<div class="overflow-x-auto">
+<table class="w-full text-xs">
+<thead><tr class="text-gray-500 border-b border-gray-800">
+<th class="text-left py-2 px-2">ID</th><th class="text-left py-2 px-2">模块</th><th class="text-right py-2 px-2">Swap 数</th><th class="text-right py-2 px-2">交易量</th><th class="text-right py-2 px-2">P&L</th><th class="text-center py-2 px-2">状态</th>
+</tr></thead>
+<tbody id="strategies-table"><tr><td colspan="6" class="text-center py-8 text-gray-600">正在加载策略...</td></tr></tbody>
+</table>
+</div>
+</div>
+</section>
+<!-- Decision Journal -->
+<section class="max-w-6xl mx-auto px-4 py-16" id="journal">
+<h2 class="text-2xl font-bold glow-p orb mb-8" data-i18n="journalTitle">决策日志</h2>
+<div class="card p-6">
+<div id="journal-timeline" class="space-y-4">
+<div class="text-center py-8 text-gray-600 text-xs">正在从链上加载决策记录...</div>
+</div>
+</div>
+</section>
+<!-- NFT Gallery -->
+<section class="max-w-6xl mx-auto px-4 py-16" id="nfts">
+<h2 class="text-2xl font-bold glow orb mb-8" data-i18n="nftTitle">策略 NFT 画廊</h2>
+<div id="nft-gallery" class="grid md:grid-cols-3 gap-6">
+<div class="text-center py-8 text-gray-600 text-xs col-span-3">正在加载 NFT...</div>
+</div>
+</section>
+<!-- Architecture -->
+<section class="max-w-6xl mx-auto px-4 py-16" id="architecture">
+<h2 class="text-2xl font-bold glow orb mb-8 text-center" data-i18n="archTitle">架构概述</h2>
+<div class="card p-6 mb-8">
+<div class="flex flex-wrap justify-center gap-2 text-xs text-gray-400 items-center">
+<span class="px-3 py-2 bg-[#0d1117] rounded border border-cyan-900">市场数据</span>
+<span class="text-[var(--neon)]">&rarr;</span>
+<span class="px-3 py-2 bg-[#0d1117] rounded border border-purple-900">AI Agent（5层认知）</span>
+<span class="text-[var(--neon)]">&rarr;</span>
+<span class="px-3 py-2 bg-[#0d1117] rounded border border-cyan-900">GenesisHookAssembler</span>
+<span class="text-[var(--neon)]">&rarr;</span>
+<span class="px-3 py-2 bg-[#0d1117] rounded border border-purple-900">Hook 模块</span>
+<span class="text-[var(--neon)]">&rarr;</span>
+<span class="px-3 py-2 bg-[#0d1117] rounded border border-cyan-900">Uniswap V4 池</span>
+<span class="text-[var(--neon)]">&rarr;</span>
+<span class="px-3 py-2 bg-[#0d1117] rounded border border-yellow-900">策略 NFT</span>
+</div>
+</div>
+<div class="grid md:grid-cols-3 gap-6 mb-8">
+<div class="card p-6">
+<h3 class="text-sm font-bold text-[var(--purple)] orb mb-3">AI Agent 层</h3>
+<ul class="space-y-2 text-xs text-gray-400">
+<li>5 层认知架构（感知 &rarr; 分析 &rarr; 规划 &rarr; 进化 &rarr; 元认知）</li>
+<li>决策日志完整记录在链上</li>
+<li>9 个 Python 脚本编排策略生命周期</li>
+<li>默认 DRY_RUN=True 安全模式</li>
+</ul>
+</div>
+<div class="card p-6">
+<h3 class="text-sm font-bold text-[var(--neon)] orb mb-3">X Layer 链上层</h3>
+<ul class="space-y-2 text-xs text-gray-400">
+<li>GenesisHookAssembler 元工厂合约</li>
+<li>3 个可组合 Uniswap V4 Hook 模块</li>
+<li>策略 NFT（ERC-721）用于验证策略</li>
+<li>Chain 196 主网 / 1952 测试网，1 秒出块</li>
+</ul>
+</div>
+<div class="card p-6" style="border-color:rgba(234,179,8,.2)">
+<h3 class="text-sm font-bold text-yellow-400 orb mb-3">安全扫描器</h3>
+<ul class="space-y-2 text-xs text-gray-400">
+<li><span class="text-green-400">&#x2713;</span> onchainos-security 集成</li>
+<li><span class="text-green-400">&#x2713;</span> 自动合约漏洞扫描</li>
+<li><span class="text-green-400">&#x2713;</span> Hook 实时威胁检测</li>
+<li><span class="text-green-400">&#x2713;</span> 部署前审计检查</li>
+</ul>
+</div>
+</div>
+<div id="chart-radar" class="chart-responsive" style="height:300px"></div>
+</section>
+<!-- Modules -->
+<section class="max-w-6xl mx-auto px-4 py-16" id="modules">
+<h2 class="text-2xl font-bold glow orb mb-8 text-center" data-i18n="modTitle">Hook 模块</h2>
+<div class="grid md:grid-cols-3 gap-6">
+<div class="card p-6 text-center">
+<div class="text-3xl mb-2 text-[var(--neon)]">&#x2194;</div>
+<h3 class="font-bold text-sm mb-1 orb">动态费率模块</h3>
+<p class="text-[var(--neon)] text-xs mb-2 orb">费率 = f(波动率)</p>
+<p class="text-xs text-gray-500 mb-3">根据实时市场波动率动态调整 Swap 费率。低波动率 = 低费率，高波动率 = 高费率。</p>
+<div id="chart-fee" class="chart-responsive" style="height:120px"></div>
+</div>
+<div class="card p-6 text-center">
+<div class="text-3xl mb-2 text-[var(--purple)]">&#x1F6E1;</div>
+<h3 class="font-bold text-sm mb-1 orb">MEV 防护模块</h3>
+<p class="text-[var(--purple)] text-xs mb-2 orb">三明治攻击检测</p>
+<p class="text-xs text-gray-500 mb-3">实时检测并阻断三明治攻击，保护 LP 免受 MEV 提取。</p>
+<div class="text-xs text-left bg-black/50 rounded p-3 font-mono"><span class="text-red-400">TX1 买入</span> &rarr; <span class="text-yellow-400">受害者</span> &rarr; <span class="text-red-400">TX2 卖出</span><br><span class="text-green-400 mt-1 block">&rarr; 防护盾: 已阻断</span></div>
+</div>
+<div class="card p-6 text-center">
+<div class="text-3xl mb-2 text-cyan-300">&#x21C5;</div>
+<h3 class="font-bold text-sm mb-1 orb">自动再平衡模块</h3>
+<p class="text-cyan-300 text-xs mb-2 orb">无常损失防护</p>
+<p class="text-xs text-gray-500 mb-3">当价格偏离范围边界时自动再平衡流动性头寸。</p>
+<div id="chart-range" class="chart-responsive" style="height:120px"></div>
+</div>
+</div>
+</section>
+<!-- x402 Payment Protocol -->
+<section class="max-w-6xl mx-auto px-4 py-16" id="x402">
+<h2 class="text-2xl font-bold glow-p orb mb-3 text-center" data-i18n="x402Title">x402 支付协议</h2>
+<p class="text-center text-xs text-gray-500 mb-8 max-w-xl mx-auto">基于 HTTP 402 Payment Required 协议的链上微支付。AI Agent 通过 x402 实现策略信号的实时货币化 — 其他 Agent 可付费查询、订阅或购买完整策略参数。</p>
+<div class="grid md:grid-cols-4 gap-4 mb-6">
+<div class="card p-5 x402-tier" style="border-color:rgba(0,240,255,.15)">
+<p class="text-xs text-gray-500 mb-1">信号查询</p>
+<p class="text-2xl font-black text-[var(--neon)] orb">$0.001</p>
+<p class="text-xs text-gray-500 mt-2">USDT / 次</p>
+<ul class="mt-3 space-y-1 text-xs text-gray-400"><li>单次市场信号</li><li>波动率 + 制度分类</li><li>异步结算</li></ul>
+</div>
+<div class="card p-5 x402-tier" style="border-color:rgba(168,85,247,.15)">
+<p class="text-xs text-gray-500 mb-1">策略订阅</p>
+<p class="text-2xl font-black text-[var(--purple)] orb">$0.01</p>
+<p class="text-xs text-gray-500 mt-2">USDT / 次</p>
+<ul class="mt-3 space-y-1 text-xs text-gray-400"><li>实时策略变更推送</li><li>费率调整通知</li><li>异步结算</li></ul>
+</div>
+<div class="card p-5 x402-tier" style="border-color:rgba(34,197,94,.15)">
+<p class="text-xs text-gray-500 mb-1">参数购买</p>
+<p class="text-2xl font-black text-green-400 orb">$1.00</p>
+<p class="text-xs text-gray-500 mt-2">USDT / 份</p>
+<ul class="mt-3 space-y-1 text-xs text-gray-400"><li>完整策略参数导出</li><li>模块配置详情</li><li>同步结算（即时）</li></ul>
+</div>
+<div class="card p-5 x402-tier" style="border-color:rgba(234,179,8,.15)">
+<p class="text-xs text-gray-500 mb-1">NFT 授权</p>
+<p class="text-2xl font-black text-yellow-400 orb">$5.00</p>
+<p class="text-xs text-gray-500 mt-2">USDT / 份</p>
+<ul class="mt-3 space-y-1 text-xs text-gray-400"><li>策略 NFT 授权许可</li><li>可复制完整策略</li><li>同步结算（即时）</li></ul>
+</div>
+</div>
+<div class="card p-5 mt-4">
+<h3 class="text-sm font-bold text-[var(--purple)] orb mb-3">x402 支付演示</h3>
+<div class="grid md:grid-cols-2 gap-4">
+<div>
+<label class="text-xs text-gray-500 block mb-1">选择服务</label>
+<select id="x402-service" class="w-full">
+<option value="signal_query">信号查询 ($0.001)</option>
+<option value="strategy_subscribe">策略订阅 ($0.01)</option>
+<option value="strategy_params_buy">参数购买 ($1.00)</option>
+<option value="nft_license">NFT 授权 ($5.00)</option>
+</select>
+</div>
+<div>
+<label class="text-xs text-gray-500 block mb-1">HTTP 请求预览</label>
+<div id="x402-preview" class="bg-black/50 rounded p-3 font-mono text-xs text-gray-400 overflow-x-auto">
+<p><span class="text-cyan-400">GET</span> /api/v1/signal?pair=ETH-USDT</p>
+<p><span class="text-purple-400">X-Payment:</span> x402-USDT-0.001</p>
+<p><span class="text-purple-400">X-Chain:</span> xlayer-196</p>
+</div>
+</div>
+</div>
+<div class="mt-3 flex gap-3">
+<button id="x402-pay-btn" class="neon-btn text-xs py-2 px-4">模拟 x402 支付</button>
+<span id="x402-status" class="text-xs text-gray-500 self-center"></span>
+</div>
+</div>
+<div class="card p-4 text-center mt-4">
+<p class="text-xs text-gray-500">支付代币: <span class="text-[var(--neon)]">USDT</span> (X Layer 零 Gas 费) &nbsp;|&nbsp; 协议: <span class="text-[var(--purple)]">HTTP 402 Payment Required</span> &nbsp;|&nbsp; 结算: <span class="text-green-400">OnchainOS pay-with-any-token</span></p>
+</div>
+</section>
+<!-- Footer -->
+<footer class="border-t border-gray-800 mt-16">
+<div class="max-w-6xl mx-auto px-4 py-12">
+<h3 class="orb text-sm text-[var(--neon)] mb-6">已部署合约（X Layer 主网, Chain 196）</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs mb-8">
+<div class="card p-3 flex justify-between"><span class="text-gray-500">GenesisHookAssembler</span><a href="https://www.oklink.com/xlayer/address/0xC5E851fEC9188DD4F6cCB2Ebc134b33210D4aC78" target="_blank" class="text-[var(--neon)] hover:underline truncate-addr">0xC5E851...C78</a></div>
+<div class="card p-3 flex justify-between"><span class="text-gray-500">Assembler V2 (Swap Pipeline)</span><a href="https://www.oklink.com/xlayer/address/0x8da3b913362aa243BC89322Fe8012e70175B6D48" target="_blank" class="text-[var(--neon)] hover:underline truncate-addr">0x8da3b9...D48</a></div>
+<div class="card p-3 flex justify-between"><span class="text-gray-500">GenesisV4Hook</span><a href="https://www.oklink.com/xlayer/address/0x174a2450b342042AAe7398545f04B199248E69c0" target="_blank" class="text-[var(--neon)] hover:underline truncate-addr">0x174a24...9c0</a></div>
+<div class="card p-3 flex justify-between"><span class="text-gray-500">DynamicFeeModule</span><a href="https://www.oklink.com/xlayer/address/0x277Ee5801D5d1e5126A76c986c96923AB5eC54Ed" target="_blank" class="text-[var(--neon)] hover:underline truncate-addr">0x277Ee5...4Ed</a></div>
+<div class="card p-3 flex justify-between"><span class="text-gray-500">MEVProtectionModule</span><a href="https://www.oklink.com/xlayer/address/0xA4f6ABd6F77928b06F075637ccBACA8f89e17386" target="_blank" class="text-[var(--neon)] hover:underline truncate-addr">0xA4f6AB...386</a></div>
+<div class="card p-3 flex justify-between"><span class="text-gray-500">AutoRebalanceModule</span><a href="https://www.oklink.com/xlayer/address/0xe04E22e78E1935b60e8827EB72CEc3b56299c8ee" target="_blank" class="text-[var(--neon)] hover:underline truncate-addr">0xe04E22...8ee</a></div>
+<div class="card p-3 flex justify-between"><span class="text-gray-500">StrategyNFT</span><a href="https://www.oklink.com/xlayer/address/0x8a0e87395f864405c5225eBd80391Ac82eefe437" target="_blank" class="text-[var(--neon)] hover:underline truncate-addr">0x8a0e87...437</a></div>
+<div class="card p-3 flex justify-between"><span class="text-gray-500">LiquidityShield</span><a href="https://www.oklink.com/xlayer/address/0xd969448dfc24Fe3Aff25e86db338fAB41b104319" target="_blank" class="text-[var(--neon)] hover:underline truncate-addr">0xd96944...319</a></div>
+<div class="card p-3 flex justify-between"><span class="text-gray-500">Oracle</span><a href="https://www.oklink.com/xlayer/address/0xCFc867E2379Cbe097D934CB8e19e3F028B82Bd3D" target="_blank" class="text-[var(--neon)] hover:underline truncate-addr">0xCFc867...d3D</a></div>
+<div class="card p-3 flex justify-between"><span class="text-gray-500">Uniswap V4 PoolManager</span><a href="https://www.oklink.com/xlayer/address/0x360e68faCCca8cA495c1B759Fd9EEe466dB9Fb32" target="_blank" class="text-[var(--neon)] hover:underline truncate-addr">0x360e68...B32</a></div>
+</div>
+<div class="flex flex-wrap gap-4 justify-center items-center mb-6">
+<span class="badge"><span class="w-2 h-2 rounded-full bg-cyan-400"></span> Onchain OS 驱动</span>
+<span class="badge"><span class="w-2 h-2 rounded-full bg-pink-400"></span> Uniswap V4</span>
+<a href="https://github.com/0xCaptain888/genesis-protocol" target="_blank" class="badge hover:border-[var(--neon)]">GitHub</a>
+</div>
+<p class="text-center text-gray-600 text-xs">为 OKX Build X Hackathon 2026 打造 | Genesis Protocol</p>
+</div>
+</footer>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "generatedAt": "2026-04-12T06:36:44.916Z",
+  "leaseId": "lease_7997019c-c5b8-4b8a-9104-589ba18ca3ae",
+  "requestId": "req_5bac55c7-66d0-4063-abba-5d7244cfd078",
+  "consumerName": "strategy-office",
+  "status": "broadcasted",
+  "spentUsd": 3,
+  "txHash": "0x5289c0f232e55e9d053ffee4d2e3269e2e2833c3cea41beff9c0ea476bd2d9f3",
+  "explorerUrl": "https://www.oklink.com/xlayer/tx/0x5289c0f232e55e9d053ffee4d2e3269e2e2833c3cea41beff9c0ea476bd2d9f3",
+  "note": "Executed USDT0 -> USDC via CurveNG -> OkieStableSwap."
+}

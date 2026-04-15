@@ -1,0 +1,11 @@
+{
+  "generatedAt": "2026-04-14T12:15:57.627Z",
+  "leaseId": "lease_a65108f6-666c-4cc5-8be3-99007b6afada",
+  "requestId": "req_px-1776168957623",
+  "consumerName": "strategy-office",
+  "status": "broadcasted",
+  "spentUsd": 3,
+  "txHash": "0xd956b78edeff2f815f50cc337dff1715f32026d42802518036701cee1212fece",
+  "explorerUrl": "https://www.oklink.com/xlayer/tx/0xd956b78edeff2f815f50cc337dff1715f32026d42802518036701cee1212fece",
+  "note": "Executed USDT0 -> OKB via CurveNG -> Revoswap V2. TX hash recovered from chain after the OKX CLI timed out."
+}

@@ -1,0 +1,39 @@
+{
+  "leaseId": "lease_7997019c-c5b8-4b8a-9104-589ba18ca3ae",
+  "issuedAt": "2026-04-12T06:34:43.858Z",
+  "expiresAt": "2026-04-13T06:34:43.859Z",
+  "status": "active",
+  "ownerLabel": "human-principal",
+  "consumerName": "strategy-office",
+  "walletAddress": "0xdbc8e35ea466f85d57c0cc1517a81199b8549f04",
+  "baseAsset": "USDT0",
+  "allowedAssets": [
+    "USDT0",
+    "USDC",
+    "OKB"
+  ],
+  "allowedProtocols": [
+    "okx-aggregator",
+    "quickswap"
+  ],
+  "allowedActions": [
+    "buy",
+    "sell",
+    "rebalance"
+  ],
+  "counterpartyAllowlist": [
+    "okx-aggregator",
+    "quickswap"
+  ],
+  "perTxUsd": 3,
+  "dailyBudgetUsd": 15,
+  "trustRequirements": {
+    "reasonRequired": true,
+    "proofRequired": true,
+    "operatorCanPause": true,
+    "degradedRequiresReview": true
+  },
+  "notes": [
+    "Bounded execution lease for strategy-office treasury actions on X Layer."
+  ]
+}

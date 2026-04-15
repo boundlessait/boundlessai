@@ -1,0 +1,46 @@
+<svg width="1500" height="500" viewBox="0 0 1500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1500" y2="500" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#050507"/>
+      <stop offset="1" stop-color="#0F172A"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1200 120) rotate(145) scale(520 360)">
+      <stop stop-color="#D9F99D" stop-opacity="0.40"/>
+      <stop offset="1" stop-color="#D9F99D" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="markBg" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#D9F99D"/>
+      <stop offset="1" stop-color="#84CC16"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1500" height="500" fill="url(#bg)"/>
+  <rect width="1500" height="500" fill="url(#glow)"/>
+
+  <g opacity="0.18">
+    <circle cx="1380" cy="420" r="180" fill="#D9F99D"/>
+    <circle cx="1260" cy="420" r="120" fill="#84CC16"/>
+  </g>
+
+  <g transform="translate(86,86)">
+    <rect x="0" y="0" width="168" height="168" rx="40" fill="url(#markBg)"/>
+    <path d="M40 38H98C121.196 38 140 56.804 140 80C140 102.091 122.091 120 100 120H72V142H40V38Z" fill="#0A0A0A"/>
+    <path d="M72 70V94H96C102.627 94 108 88.627 108 82C108 75.373 102.627 70 96 70H72Z" fill="#D9F99D"/>
+    <path d="M88 94H116C133.673 94 148 108.327 148 126C148 143.673 133.673 158 116 158H40V136H112C117.523 136 122 131.523 122 126C122 120.477 117.523 116 112 116H88V94Z" fill="#0A0A0A"/>
+  </g>
+
+  <g transform="translate(290,108)">
+    <text x="0" y="74" fill="#F4F4F5" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial" font-size="88" font-weight="800" letter-spacing="-1.6">Boundless</text>
+    <text x="2" y="130" fill="#A1A1AA" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial" font-size="30" font-weight="500">Treasury rules for member wallets, enforced onchain.</text>
+    <text x="2" y="176" fill="#D9F99D" font-family="JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, monospace" font-size="24" font-weight="600">Team treasury onchain. Members execute within rules.</text>
+  </g>
+
+  <g opacity="0.45">
+    <rect x="290" y="338" width="260" height="44" rx="22" fill="#0A0A0A" stroke="#3F3F46"/>
+    <text x="322" y="367" fill="#A1A1AA" font-family="Inter, system-ui" font-size="18" font-weight="600">#BuildX</text>
+    <rect x="566" y="338" width="260" height="44" rx="22" fill="#0A0A0A" stroke="#3F3F46"/>
+    <text x="600" y="367" fill="#A1A1AA" font-family="Inter, system-ui" font-size="18" font-weight="600">#XLayer</text>
+    <rect x="842" y="338" width="300" height="44" rx="22" fill="#0A0A0A" stroke="#3F3F46"/>
+    <text x="874" y="367" fill="#A1A1AA" font-family="Inter, system-ui" font-size="18" font-weight="600">#OnchainGovernance</text>
+  </g>
+</svg>

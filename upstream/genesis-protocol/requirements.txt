@@ -1,0 +1,8 @@
+# Genesis Protocol - Python Dependencies
+# All core dependencies are stdlib-only (Python 3.10+)
+# Optional dependencies listed below for enhanced features
+
+# No external dependencies required - uses only Python stdlib:
+# - subprocess, json, logging, math, time, statistics, hashlib, os
+# - urllib.request, urllib.parse (for REST API)
+# - hmac, base64 (for HMAC-SHA256 auth)

@@ -1,0 +1,15 @@
+{
+  "name": "genesis-protocol-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Genesis Protocol - AI-Powered Uniswap V4 Hook Strategy Engine for X Layer",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0"
+  }
+}

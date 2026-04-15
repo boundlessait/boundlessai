@@ -1,0 +1,74 @@
+name: genesis
+version: 0.2.0
+description: >
+  AI-powered Uniswap V4 Hook strategy engine for X Layer.
+  Autonomously generates, deploys, and manages composable Hook strategies
+  with dynamic fees, MEV protection, auto-rebalancing, JIT liquidity shielding,
+  and on-chain TWAP oracle. Supports MEV recapture via CCA auctions.
+  Proven strategies are minted as on-chain Strategy NFTs.
+author: Genesis Protocol
+license: MIT
+homepage: https://github.com/0xCaptain888/genesis-protocol
+tags:
+  - defi
+  - uniswap-v4
+  - hooks
+  - x-layer
+  - strategy
+  - nft
+  - x402
+  - ai-agent
+  - mev-protection
+  - twap-oracle
+  - cca-auction
+
+platforms:
+  - claude-code
+  - cursor
+  - openclaw
+
+dependencies:
+  required:
+    - onchainos-wallet
+    - onchainos-trade
+    - onchainos-market
+    - onchainos-security
+  optional:
+    - onchainos-payment
+    - onchainos-defi-invest
+    - uniswap-hooks
+    - uniswap-trading
+    - uniswap-cca
+    - uniswap-driver
+    - uniswap-viem
+    - pay-with-any-token
+
+chain:
+  id: 196
+  name: xlayer
+  rpc: https://rpc.xlayer.tech
+
+entry_point: scripts/main.py
+skill_file: SKILL.md
+
+safety:
+  default_paused: true
+  default_mode: paper
+  default_dry_run: true
+  requires_explicit_enable: true
+
+x402:
+  enabled: true
+  services:
+    - name: signal_query
+      amount: "0.001"
+      token: USDT
+    - name: strategy_subscribe
+      amount: "0.01"
+      token: USDT
+    - name: strategy_params_buy
+      amount: "1.00"
+      token: USDT
+    - name: nft_license
+      amount: "5.00"
+      token: USDT

@@ -1,0 +1,162 @@
+{
+  "_comment": "x402 Guard - Example Policy Configurations",
+  "_description": "Copy one of these profiles as a starting point and customize for your agent. Pass the policy object (not the wrapper) to guard.setPolicy(agentId, policy).",
+  "_version": "1.0.0",
+
+  "profiles": {
+    "conservative": {
+      "_description": "Low spending limits with a strict recipient whitelist. Best for agents operating in production with real funds and limited, well-known API targets. All payments outside the whitelist are blocked regardless of amount.",
+      "maxPerTransaction": "1.00",
+      "dailyLimit": "5.00",
+      "monthlyLimit": "20.00",
+      "allowedAssets": ["USDC"],
+      "blockedAssets": ["ETH", "WETH", "DAI", "WBTC"],
+      "recipientWhitelist": [
+        "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+        "0x4200000000000000000000000000000000000006",
+        "api.trusted-data-provider.com"
+      ],
+      "recipientBlacklist": [],
+      "requireApproval": false,
+      "autoApproveBelow": null,
+      "alertOnUnknown": true,
+      "rapidSuccessionWindow": 120,
+      "rapidSuccessionLimit": 2,
+      "networks": ["base"],
+      "paused": false,
+      "logLevel": "info",
+      "notes": "Conservative profile for production agents. Only USDC on Base mainnet. Strict recipient whitelist enforced. Soft-alert on any amount above $0.50. Max 2 payments per 2 minutes."
+    },
+
+    "balanced": {
+      "_description": "Medium limits with no recipient whitelist. Good for agents that need to pay a variety of services during research or data gathering tasks, where the full list of recipients is not known in advance. Alerts are generated for large transactions and unusual patterns.",
+      "maxPerTransaction": "10.00",
+      "dailyLimit": "50.00",
+      "monthlyLimit": "200.00",
+      "allowedAssets": ["USDC", "ETH"],
+      "blockedAssets": [],
+      "recipientWhitelist": [],
+      "recipientBlacklist": [
+        "0x0000000000000000000000000000000000000000"
+      ],
+      "requireApproval": false,
+      "autoApproveBelow": "0.05",
+      "alertOnUnknown": true,
+      "rapidSuccessionWindow": 60,
+      "rapidSuccessionLimit": 5,
+      "networks": ["base", "base-sepolia", "ethereum"],
+      "paused": false,
+      "logLevel": "info",
+      "notes": "Balanced profile for semi-autonomous agents. USDC and ETH allowed on Base and Ethereum. No whitelist - any recipient accepted but unknown ones trigger soft_alert. Auto-approve micropayments under $0.05. Alert on 5+ payments/minute."
+    },
+
+    "aggressive": {
+      "_description": "High limits with broad asset support and auto-approval for micropayments. Suitable for high-throughput agents that make many small payments, such as API aggregators or content curation bots. Human review is only triggered for large individual transactions.",
+      "maxPerTransaction": "100.00",
+      "dailyLimit": "500.00",
+      "monthlyLimit": "2000.00",
+      "allowedAssets": [],
+      "blockedAssets": [],
+      "recipientWhitelist": [],
+      "recipientBlacklist": [],
+      "requireApproval": false,
+      "autoApproveBelow": "1.00",
+      "alertOnUnknown": false,
+      "rapidSuccessionWindow": 30,
+      "rapidSuccessionLimit": 20,
+      "networks": [],
+      "paused": false,
+      "logLevel": "warn",
+      "notes": "Aggressive profile for high-volume agents. All assets and networks permitted. Auto-approve payments under $1.00. Alerts suppressed for unknown recipients. Only log warnings and errors. Max 20 payments per 30 seconds."
+    },
+
+    "developer": {
+      "_description": "High limits with verbose logging. Designed for local development and integration testing. Logs every policy decision in full detail. Does not enforce recipient whitelist so you can test against any endpoint. Use base-sepolia (testnet) to avoid spending real funds.",
+      "maxPerTransaction": "1000.00",
+      "dailyLimit": "10000.00",
+      "monthlyLimit": "50000.00",
+      "allowedAssets": [],
+      "blockedAssets": [],
+      "recipientWhitelist": [],
+      "recipientBlacklist": [],
+      "requireApproval": false,
+      "autoApproveBelow": "100.00",
+      "alertOnUnknown": false,
+      "rapidSuccessionWindow": 10,
+      "rapidSuccessionLimit": 100,
+      "networks": ["base-sepolia"],
+      "paused": false,
+      "logLevel": "verbose",
+      "notes": "Developer/testing profile. Effectively unlimited on testnet. All assets and recipients allowed. Verbose logging enabled. Never use this profile with mainnet funds or a production agent."
+    },
+
+    "emergency_stop": {
+      "_description": "Pauses all payments immediately. Apply this policy to an agent if you suspect it is misbehaving, if its wallet has been compromised, or if you need to halt spending for any other reason. All payment attempts will be blocked with the 'paused' reason until you replace this policy.",
+      "maxPerTransaction": "0.00",
+      "dailyLimit": "0.00",
+      "monthlyLimit": "0.00",
+      "allowedAssets": [],
+      "blockedAssets": [],
+      "recipientWhitelist": [],
+      "recipientBlacklist": [],
+      "requireApproval": true,
+      "autoApproveBelow": null,
+      "alertOnUnknown": true,
+      "rapidSuccessionWindow": 60,
+      "rapidSuccessionLimit": 0,
+      "networks": [],
+      "paused": true,
+      "logLevel": "verbose",
+      "notes": "EMERGENCY STOP. Agent payments suspended. All attempts blocked. Replace this policy to resume. Review spending history and alerts before re-enabling."
+    },
+
+    "testnet_only": {
+      "_description": "Restricts the agent to testnet networks only. Useful when graduating from development to a staging environment where you want realistic payment flows but cannot risk real funds. Blocks all mainnet transactions at the policy level.",
+      "maxPerTransaction": "50.00",
+      "dailyLimit": "200.00",
+      "monthlyLimit": "1000.00",
+      "allowedAssets": ["USDC"],
+      "blockedAssets": [],
+      "recipientWhitelist": [],
+      "recipientBlacklist": [],
+      "requireApproval": false,
+      "autoApproveBelow": "1.00",
+      "alertOnUnknown": true,
+      "rapidSuccessionWindow": 60,
+      "rapidSuccessionLimit": 10,
+      "networks": ["base-sepolia", "ethereum-sepolia", "polygon-amoy"],
+      "paused": false,
+      "logLevel": "info",
+      "notes": "Testnet-only profile for staging environments. Only testnet USDC. Any mainnet payment attempt will be blocked because mainnet is not in the networks list."
+    }
+  },
+
+  "usage": {
+    "javascript": [
+      "const { GuardClient } = require('./integration-example');",
+      "const guard = new GuardClient(process.env.GUARD_API_URL, process.env.GUARD_API_KEY);",
+      "",
+      "// Load a profile from this file:",
+      "const policies = require('./policy-examples.json');",
+      "const policy = policies.profiles.balanced;",
+      "",
+      "// Apply it to your agent:",
+      "await guard.setPolicy('my-agent-01', policy);"
+    ],
+    "curl": [
+      "# Apply the balanced policy to an agent via the REST API directly:",
+      "curl -X POST http://localhost:4021/api/policy/my-agent-01 \\",
+      "  -H 'Content-Type: application/json' \\",
+      "  -H 'X-Guard-API-Key: your-api-key' \\",
+      "  -d @- << 'EOF'",
+      "{",
+      "  \"maxPerTransaction\": \"10.00\",",
+      "  \"dailyLimit\": \"50.00\",",
+      "  \"monthlyLimit\": \"200.00\",",
+      "  \"allowedAssets\": [\"USDC\", \"ETH\"],",
+      "  \"logLevel\": \"info\"",
+      "}",
+      "EOF"
+    ]
+  }
+}
