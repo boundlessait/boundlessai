@@ -1,31 +1,54 @@
 # Scoring Alignment
 
-## OnchainOS / Uniswap integration
+## Agentic Trading & Portfolio Management
 
-- OnchainOS wallet balance lookup
-- OnchainOS route quote
-- OnchainOS swap execution reuse from the live strategy-office path
-- the same strategy-office round is now blocked or resized by the trust lease before execution proceeds
-- X Layer explorer-linked receipts
+Boundless is not a trading strategy. It is the runtime control layer that sits before autonomous trading or payment execution.
 
-## X Layer ecosystem integration
+That still fits the track directly, because agentic trading systems need:
 
-- scoped specifically to X Layer chain ID 196
-- designed to govern the same wallet/execution setup already used by live workspace projects
-- receipt and proof surfaces are built around X Layer execution evidence
+- bounded wallet authority
+- explicit spend limits
+- human review modes
+- proof for both allowed and blocked actions
 
-## AI interactive experience
+## Kite Fit
 
-- humans issue leases instead of handing over full wallet access
-- agents operate within bounded authority
-- operator can pause or switch to review mode
+Kite Passport handles:
 
-## Product completeness
+- identity
+- delegated payment permission
+- session scope
 
-- lease issuance
-- strategy-office bridge into trust-lease evaluation
-- latest proof packet
-- receipt log
-- submission page
-- proof dashboard
-- deployment runbook
+Boundless adds:
+
+- per-request policy enforcement
+- operator controls (`active`, `review`, `paused`)
+- policy-backed payment checks
+- proof and receipts after the decision
+
+## Product Completeness
+
+The shipped product includes:
+
+- `/submission` for policy definition
+- `/member-test` for session boundary + payment check flow
+- `/proof` for session, request, decision, payment result, and receipt
+- wallet-signed policy actions
+- persisted proof packet artifacts
+
+## Proof Quality
+
+The repo includes:
+
+- latest proof packet JSON
+- current policy JSON
+- live screenshots
+- presentation deck
+- demo script
+- submission form answers
+
+## Judge Memory Target
+
+The strongest takeaway should be:
+
+> Kite Passport lets the agent pay. Boundless decides the exact rules under which that payment is allowed.

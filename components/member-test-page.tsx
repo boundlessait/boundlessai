@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { createPublicClient, createWalletClient, custom, formatUnits, http, isAddress, parseUnits } from 'viem';
 import type { Address } from 'viem';
-import { xLayer } from 'viem/chains';
+import { KITE_TESTNET_USDT_ADDRESS, kiteTestnetChain } from '@/lib/chain-config';
 import { TopWalletConnect } from '@/components/top-wallet-connect';
 import { boundlessVaultAbi } from '@/lib/boundless-vault-abi';
 
@@ -12,10 +12,11 @@ const CONNECTED_WALLET_STORAGE_KEY = 'trust-leases.connected-wallet';
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 const DEMO_DEFAULT_RECEIVER = '0x3b388c85B745FbDFdc8204878A77192de7C1767D';
 const DEMO_FALLBACK_LEASE_ID = 'lease_a8c4b164-9347-4792-8fba-a3d0539a9e3f';
+const LOCAL_DEMO_X402_PATH = '/api/demo-x402-weather';
+const REMOTE_DEMO_X402_URL = 'https://x402.dev.gokite.ai/api/weather';
+const LOCAL_DEMO_X_PAYMENT = 'demo-paid';
 const TOKEN_PRESETS: TokenPreset[] = [
-  { key: 'USDT0', label: 'USDT0 (6)', address: '0x779ded0c9e1022225f8e0630b35a9b54be713736', decimals: '6' },
-  { key: 'USDC', label: 'USDC (6)', address: '0x74b7f16337b8972027f6196a17a631ac6de26d22', decimals: '6' },
-  { key: 'WOKB', label: 'WOKB (18)', address: '0xe538905cf8410324e03a5a23c1c177a474d59b2b', decimals: '18' },
+  { key: 'USDT', label: 'Test USDT (6)', address: KITE_TESTNET_USDT_ADDRESS, decimals: '6' },
 ];
 const CONTROLLER_READ_ABI = [
   {
@@ -67,6 +68,35 @@ type BudgetState = {
   remainingDailyUsd6: bigint;
 };
 
+type KitePassportSession = {
+  sessionId: string;
+  payerAddress: string;
+  agentName?: string;
+  agentId?: string;
+  network: 'kite-testnet' | 'kite-mainnet';
+  createdAt?: string;
+  expiresAt: string;
+  dailyBudgetUsd: number;
+  spentUsd: number;
+  remainingBudgetUsd: number;
+  portalUrl?: string;
+  notes?: string;
+};
+
+type X402Challenge = {
+  error?: string;
+  accepts?: Array<{
+    scheme?: string;
+    network?: string;
+    maxAmountRequired?: string;
+    resource?: string;
+    description?: string;
+    payTo?: string;
+    asset?: string;
+    merchantName?: string;
+  }>;
+};
+
 type EthereumProvider = {
   request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
 };
@@ -93,7 +123,7 @@ function errText(err: unknown): string {
 export function MemberTestPage({ vaultAddress, defaultLeaseId, controllerAddress, consumerName, rpcUrl }: MemberTestPageProps) {
   const [walletAddress, setWalletAddress] = useState<string>('');
   const [leaseId, setLeaseId] = useState(defaultLeaseId ?? DEMO_FALLBACK_LEASE_ID);
-  const [tokenPreset, setTokenPreset] = useState<string>('USDT0');
+  const [tokenPreset, setTokenPreset] = useState<string>('USDT');
   const [tokenAddress, setTokenAddress] = useState('');
   const [receiver, setReceiver] = useState(DEMO_DEFAULT_RECEIVER);
   const [tokenAmount, setTokenAmount] = useState('0.01');
@@ -108,6 +138,27 @@ export function MemberTestPage({ vaultAddress, defaultLeaseId, controllerAddress
   const [syncingLease, setSyncingLease] = useState(false);
   const [liveLeaseId, setLiveLeaseId] = useState<string | null>(null);
   const [vaultLeaseId, setVaultLeaseId] = useState<string | null>(null);
+  const [passportSession, setPassportSession] = useState<KitePassportSession | null>(null);
+  const [sessionIdInput, setSessionIdInput] = useState('');
+  const [sessionPayerInput, setSessionPayerInput] = useState('');
+  const [sessionAgentNameInput, setSessionAgentNameInput] = useState('Boundless by Miraix AI');
+  const [sessionAgentIdInput, setSessionAgentIdInput] = useState('');
+  const [sessionBudgetInput, setSessionBudgetInput] = useState('5');
+  const [sessionSpentInput, setSessionSpentInput] = useState('0');
+  const [sessionExpiryInput, setSessionExpiryInput] = useState('');
+  const [sessionPortalUrlInput, setSessionPortalUrlInput] = useState('https://portal.gokite.ai');
+  const [sessionNotesInput, setSessionNotesInput] = useState('Created in Kite Portal and enforced by Boundless before x402 payment.');
+  const [savingSession, setSavingSession] = useState(false);
+  const [serviceUrl, setServiceUrl] = useState('');
+  const [serviceLocation, setServiceLocation] = useState('Singapore');
+  const [serviceUnits, setServiceUnits] = useState<'metric' | 'imperial'>('metric');
+  const [serviceNotionalUsd, setServiceNotionalUsd] = useState('1');
+  const [serviceReason, setServiceReason] = useState('Boundless weather fetch inside the active Passport session.');
+  const [xPaymentHeader, setXPaymentHeader] = useState('');
+  const [challenge, setChallenge] = useState<X402Challenge | null>(null);
+  const [proofLink, setProofLink] = useState<string | null>(null);
+  const [paymentPreview, setPaymentPreview] = useState<string | null>(null);
+  const [runningPayment, setRunningPayment] = useState<'prepare' | 'pay' | null>(null);
 
   const vault = useMemo(() => (vaultAddress && isAddress(vaultAddress) ? (vaultAddress as Address) : null), [vaultAddress]);
   const controller = useMemo(
@@ -124,6 +175,7 @@ export function MemberTestPage({ vaultAddress, defaultLeaseId, controllerAddress
   const leaseSynced = Boolean(liveLeaseId && leaseId.trim() === liveLeaseId);
   const vaultLeaseSynced = Boolean(vaultLeaseId && leaseId.trim() === vaultLeaseId);
   const demoReady = hasVault && hasConnectedMember && hasLeaseId && hasToken && hasReceiver && memberPolicyReady && leaseSynced && vaultLeaseSynced;
+  const localDemoServiceEnabled = serviceUrl.includes(LOCAL_DEMO_X402_PATH);
 
   useEffect(() => {
     const preset = TOKEN_PRESETS.find((item) => item.key === tokenPreset);
@@ -140,14 +192,23 @@ export function MemberTestPage({ vaultAddress, defaultLeaseId, controllerAddress
     }
   }, [defaultLeaseId, leaseId]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    if (!serviceUrl) {
+      setServiceUrl(`${window.location.origin}${LOCAL_DEMO_X402_PATH}`);
+    }
+  }, [serviceUrl]);
+
   async function syncLeaseFromChain() {
     if (!controller) {
       return;
     }
     setSyncingLease(true);
     try {
-      const client = createPublicClient({
-        chain: xLayer,
+        const client = createPublicClient({
+        chain: kiteTestnetChain,
         transport: http(rpcUrl),
       });
       const row = await client.readContract({
@@ -174,7 +235,7 @@ export function MemberTestPage({ vaultAddress, defaultLeaseId, controllerAddress
         setVaultLeaseId(activeLease || null);
       }
     } catch {
-      // no-op: keep current fallback lease id
+      // no-op: keep current fallback policy id
     } finally {
       setSyncingLease(false);
     }
@@ -200,6 +261,135 @@ export function MemberTestPage({ vaultAddress, defaultLeaseId, controllerAddress
     return () => window.removeEventListener('trust-leases-wallet-updated', onWalletUpdate);
   }, []);
 
+  async function loadPassportSession() {
+    try {
+      const response = await fetch('/api/passport-session', { cache: 'no-store' });
+      const payload = await response.json() as { session?: KitePassportSession | null };
+      if (!payload.session) {
+        return;
+      }
+      setPassportSession(payload.session);
+      setSessionIdInput(payload.session.sessionId);
+      setSessionPayerInput(payload.session.payerAddress);
+      setSessionAgentNameInput(payload.session.agentName ?? 'Boundless by Miraix AI');
+      setSessionAgentIdInput(payload.session.agentId ?? '');
+      setSessionBudgetInput(String(payload.session.dailyBudgetUsd));
+      setSessionSpentInput(String(payload.session.spentUsd));
+      setSessionExpiryInput(payload.session.expiresAt);
+      setSessionPortalUrlInput(payload.session.portalUrl ?? 'https://portal.gokite.ai');
+      setSessionNotesInput(payload.session.notes ?? 'Created in Kite Portal and enforced by Boundless before x402 payment.');
+    } catch {
+      // ignore local session bootstrap failure
+    }
+  }
+
+  useEffect(() => {
+    void loadPassportSession();
+  }, []);
+
+  useEffect(() => {
+    if (!sessionExpiryInput) {
+      setSessionExpiryInput(new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString());
+    }
+  }, [sessionExpiryInput]);
+
+  async function savePassportSession() {
+    setSavingSession(true);
+    setError(null);
+    setResult(null);
+    try {
+      const response = await fetch('/api/passport-session', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: sessionIdInput,
+          payerAddress: sessionPayerInput,
+          agentName: sessionAgentNameInput,
+          agentId: sessionAgentIdInput,
+          network: 'kite-testnet',
+          expiresAt: sessionExpiryInput,
+          dailyBudgetUsd: Number(sessionBudgetInput),
+          spentUsd: Number(sessionSpentInput),
+          portalUrl: sessionPortalUrlInput,
+          notes: sessionNotesInput,
+        }),
+      });
+      const payload = await response.json() as { ok?: boolean; error?: string; session?: KitePassportSession };
+      if (!response.ok || !payload.session) {
+        throw new Error(payload.error || 'Failed to save Kite Passport session.');
+      }
+      setPassportSession(payload.session);
+      setResult(`Saved Kite Passport session ${payload.session.sessionId}.`);
+    } catch (err) {
+      setError(errText(err));
+    } finally {
+      setSavingSession(false);
+    }
+  }
+
+  async function runX402Payment(mode: 'prepare' | 'pay') {
+    setError(null);
+    setResult(null);
+    setProofLink(null);
+    setRunningPayment(mode);
+    try {
+      const response = await fetch('/api/x402-payment', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          serviceUrl,
+          location: serviceLocation,
+          units: serviceUnits,
+          notionalUsd: Number(serviceNotionalUsd),
+          reason: serviceReason,
+          xPayment: mode === 'pay' ? xPaymentHeader : undefined,
+        }),
+      });
+      const payload = await response.json() as {
+        ok?: boolean;
+        blocked?: boolean;
+        paymentRequired?: boolean;
+        requestId?: string;
+        proofUrl?: string;
+        rationale?: string;
+        challenge?: X402Challenge;
+        response?: unknown;
+        error?: string;
+        packet?: { execution?: { note?: string } };
+      };
+
+      if (payload.paymentRequired) {
+        setChallenge((payload.challenge as X402Challenge) ?? null);
+        if (localDemoServiceEnabled && !xPaymentHeader.trim()) {
+          setXPaymentHeader(LOCAL_DEMO_X_PAYMENT);
+        }
+        setResult(
+          localDemoServiceEnabled
+            ? `Policy approved. Local demo x402 challenge received for request ${payload.requestId}. The X-PAYMENT field has been prefilled for recording.`
+            : `Policy approved. x402 challenge received for request ${payload.requestId}. Paste a Kite Passport X-PAYMENT header and run Complete Paid Request.`,
+        );
+        return;
+      }
+
+      if (!response.ok || !payload.ok) {
+        setChallenge(null);
+        setProofLink(payload.proofUrl ?? null);
+        setPaymentPreview(payload.response ? JSON.stringify(payload.response, null, 2) : null);
+        throw new Error(payload.error || payload.rationale || 'x402 payment flow failed.');
+      }
+
+      setChallenge(null);
+      setProofLink(payload.proofUrl ?? null);
+      setPaymentPreview(payload.response ? JSON.stringify(payload.response, null, 2) : null);
+      setResult(`Paid x402 request completed and proof written for ${payload.requestId}.`);
+      await loadPassportSession();
+    } catch (err) {
+      setError(errText(err));
+    } finally {
+      setRunningPayment(null);
+    }
+  }
+
   async function refreshBudget() {
     setError(null);
     setResult(null);
@@ -215,7 +405,7 @@ export function MemberTestPage({ vaultAddress, defaultLeaseId, controllerAddress
     setLoadingBudget(true);
     try {
       const client = createPublicClient({
-        chain: xLayer,
+        chain: kiteTestnetChain,
         transport: http(rpcUrl),
       });
       const row = await client.readContract({
@@ -260,7 +450,7 @@ export function MemberTestPage({ vaultAddress, defaultLeaseId, controllerAddress
       return;
     }
     if (!leaseId.trim()) {
-      setError('Lease ID is required.');
+      setError('Policy ID is required.');
       return;
     }
     if (!isAddress(tokenAddress)) {
@@ -272,7 +462,7 @@ export function MemberTestPage({ vaultAddress, defaultLeaseId, controllerAddress
       return;
     }
     if (!vaultLeaseSynced) {
-      setError('Vault lease is out of sync. Click Sync Live Lease or Save Rule again from App.');
+      setError('Vault policy is out of sync. Click Sync Live Policy or Save Policy again from App.');
       return;
     }
     if (!walletAddress || !isAddress(walletAddress)) {
@@ -304,11 +494,11 @@ export function MemberTestPage({ vaultAddress, defaultLeaseId, controllerAddress
       setPendingMessage(mode === 'ok' ? 'Submitting budget-pass transaction…' : 'Submitting over-budget transaction…');
       const amount = parseUnits(tokenAmount, decimals);
       const publicClient = createPublicClient({
-        chain: xLayer,
+        chain: kiteTestnetChain,
         transport: http(rpcUrl),
       });
       const walletClient = createWalletClient({
-        chain: xLayer,
+        chain: kiteTestnetChain,
         transport: custom(ethereum),
       });
       const accounts = await walletClient.getAddresses();
@@ -360,7 +550,7 @@ export function MemberTestPage({ vaultAddress, defaultLeaseId, controllerAddress
           </div>
           <div>
             <div className="logo-text">Boundless</div>
-            <div className="logo-sub">Member Budget Test</div>
+            <div className="logo-sub">Passport + Member Budget Test</div>
           </div>
         </div>
         <div className="header-right">
@@ -381,7 +571,7 @@ export function MemberTestPage({ vaultAddress, defaultLeaseId, controllerAddress
               <h2>Judge Quick Guide</h2>
             </div>
             <p className="section-copy">
-              This page proves one thing: member spending is enforced by onchain budget rules.
+              This page proves one thing: once Kite Passport gives the agent delegated payment permission, Boundless can still enforce member spending limits onchain.
             </p>
             <div className="sidebar-meta">
               <div className="meta-item"><span className="meta-label">Step 1</span><span className="meta-value">Click <strong>Refresh Member Budget</strong></span></div>
@@ -393,14 +583,191 @@ export function MemberTestPage({ vaultAddress, defaultLeaseId, controllerAddress
 
           <div className="card">
             <div className="card-header">
+              <h2>Kite Passport Session Boundary</h2>
+            </div>
+            <p className="section-copy">
+              Create the Passport session in Kite Portal first, then mirror the live session boundary here. Boundless uses this boundary before it allows any real x402 payment to leave the session.
+            </p>
+            <div className="console-form">
+              <div className="form-row">
+                <div className="form-field">
+                  <label htmlFor="session-id" className="note-label">Session ID</label>
+                  <input id="session-id" className="note-input mono" value={sessionIdInput} onChange={(e) => setSessionIdInput(e.target.value)} placeholder="sess_..." />
+                </div>
+                <div className="form-field">
+                  <label htmlFor="session-payer" className="note-label">Payer Address</label>
+                  <input id="session-payer" className="note-input mono" value={sessionPayerInput} onChange={(e) => setSessionPayerInput(e.target.value)} placeholder="0x..." />
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-field">
+                  <label htmlFor="session-budget" className="note-label">Session Budget USD</label>
+                  <input id="session-budget" className="note-input" value={sessionBudgetInput} onChange={(e) => setSessionBudgetInput(e.target.value)} />
+                </div>
+                <div className="form-field">
+                  <label htmlFor="session-spent" className="note-label">Session Spent USD</label>
+                  <input id="session-spent" className="note-input" value={sessionSpentInput} onChange={(e) => setSessionSpentInput(e.target.value)} />
+                </div>
+                <div className="form-field">
+                  <label htmlFor="session-expiry" className="note-label">Session Expiry</label>
+                  <input id="session-expiry" className="note-input mono" value={sessionExpiryInput} onChange={(e) => setSessionExpiryInput(e.target.value)} />
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-field">
+                  <label htmlFor="session-agent-name" className="note-label">Agent Name</label>
+                  <input id="session-agent-name" className="note-input" value={sessionAgentNameInput} onChange={(e) => setSessionAgentNameInput(e.target.value)} />
+                </div>
+                <div className="form-field">
+                  <label htmlFor="session-agent-id" className="note-label">Agent ID</label>
+                  <input id="session-agent-id" className="note-input mono" value={sessionAgentIdInput} onChange={(e) => setSessionAgentIdInput(e.target.value)} placeholder="optional" />
+                </div>
+                <div className="form-field">
+                  <label htmlFor="session-portal-url" className="note-label">Portal URL</label>
+                  <input id="session-portal-url" className="note-input" value={sessionPortalUrlInput} onChange={(e) => setSessionPortalUrlInput(e.target.value)} />
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-field">
+                  <label htmlFor="session-notes" className="note-label">Notes</label>
+                  <input id="session-notes" className="note-input" value={sessionNotesInput} onChange={(e) => setSessionNotesInput(e.target.value)} />
+                </div>
+              </div>
+            </div>
+            <div className="console-actions">
+              <button type="button" className="action-button primary" onClick={savePassportSession} disabled={savingSession}>
+                {savingSession ? 'Saving Session…' : 'Save Session Boundary'}
+              </button>
+            </div>
+            {passportSession ? (
+              <div className="sidebar-meta">
+                <div className="meta-item"><span className="meta-label">Saved Session</span><span className="meta-value mono">{passportSession.sessionId}</span></div>
+                <div className="meta-item"><span className="meta-label">Remaining</span><span className="meta-value">${passportSession.remainingBudgetUsd.toFixed(2)}</span></div>
+                <div className="meta-item"><span className="meta-label">Network</span><span className="meta-value">{passportSession.network}</span></div>
+              </div>
+            ) : (
+              <p className="section-copy">No Passport session boundary saved yet.</p>
+            )}
+          </div>
+
+          <div className="card">
+            <div className="card-header">
+              <h2>Real x402 Payment Check</h2>
+            </div>
+            <p className="section-copy">
+              Boundless can run against a real external x402 service or the built-in local demo resource. For recording, use the local demo service. For Passport validation, switch back to the external Kite-aligned endpoint.
+            </p>
+            <div className="console-form">
+              <div className="console-actions">
+                <button
+                  type="button"
+                  className="action-button neutral"
+                  onClick={() => {
+                    if (typeof window !== 'undefined') {
+                      setServiceUrl(`${window.location.origin}${LOCAL_DEMO_X402_PATH}`);
+                    }
+                  }}
+                >
+                  Use Local Demo x402
+                </button>
+                <button
+                  type="button"
+                  className="action-button neutral"
+                  onClick={() => setServiceUrl(REMOTE_DEMO_X402_URL)}
+                >
+                  Use External Kite x402
+                </button>
+              </div>
+              <div className="form-row">
+                <div className="form-field">
+                  <label htmlFor="service-url" className="note-label">x402 Service URL</label>
+                  <input id="service-url" className="note-input mono" value={serviceUrl} onChange={(e) => setServiceUrl(e.target.value)} />
+                </div>
+                <div className="form-field">
+                  <label htmlFor="service-location" className="note-label">Location</label>
+                  <input id="service-location" className="note-input" value={serviceLocation} onChange={(e) => setServiceLocation(e.target.value)} />
+                </div>
+                <div className="form-field">
+                  <label htmlFor="service-units" className="note-label">Units</label>
+                  <select id="service-units" className="note-input" value={serviceUnits} onChange={(e) => setServiceUnits(e.target.value as 'metric' | 'imperial')}>
+                    <option value="metric">metric</option>
+                    <option value="imperial">imperial</option>
+                  </select>
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-field">
+                  <label htmlFor="service-notional" className="note-label">Expected Spend USD</label>
+                  <input id="service-notional" className="note-input" value={serviceNotionalUsd} onChange={(e) => setServiceNotionalUsd(e.target.value)} />
+                </div>
+                <div className="form-field">
+                  <label htmlFor="service-reason" className="note-label">Reason</label>
+                  <input id="service-reason" className="note-input" value={serviceReason} onChange={(e) => setServiceReason(e.target.value)} />
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-field">
+                  <label htmlFor="x-payment" className="note-label">Kite X-PAYMENT Header</label>
+                  <textarea
+                    id="x-payment"
+                    className="note-input mono"
+                    rows={4}
+                    value={xPaymentHeader}
+                    onChange={(e) => setXPaymentHeader(e.target.value)}
+                    placeholder={
+                      localDemoServiceEnabled
+                        ? LOCAL_DEMO_X_PAYMENT
+                        : 'Paste the X-PAYMENT header returned by Kite Passport / MCP after approving the x402 challenge.'
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+            {localDemoServiceEnabled ? (
+              <p className="section-copy">
+                Local recording mode is active. The built-in demo x402 resource returns a real 402-style challenge and accepts <code>{LOCAL_DEMO_X_PAYMENT}</code> for the paid step.
+              </p>
+            ) : (
+              <p className="section-copy">
+                External mode is active. Prepare the request first, then use Kite Passport / MCP to produce the final <code>X-PAYMENT</code> header.
+              </p>
+            )}
+            <div className="console-actions">
+              <button type="button" className="action-button neutral" onClick={() => runX402Payment('prepare')} disabled={runningPayment !== null || !passportSession}>
+                {runningPayment === 'prepare' ? 'Preparing…' : '3) Prepare x402 Request'}
+              </button>
+              <button type="button" className="action-button primary" onClick={() => runX402Payment('pay')} disabled={runningPayment !== null || !passportSession || !xPaymentHeader.trim()}>
+                {runningPayment === 'pay' ? 'Completing Payment…' : '4) Complete Paid Request'}
+              </button>
+            </div>
+            {challenge ? (
+              <div className="sidebar-meta">
+                <div className="meta-item"><span className="meta-label">Challenge</span><span className="meta-value">{challenge.error ?? '402 payment challenge returned'}</span></div>
+                <div className="meta-item"><span className="meta-label">Merchant</span><span className="meta-value">{challenge.accepts?.[0]?.merchantName ?? 'n/a'}</span></div>
+                <div className="meta-item"><span className="meta-label">Max Amount</span><span className="meta-value mono">{challenge.accepts?.[0]?.maxAmountRequired ?? 'n/a'}</span></div>
+                <div className="meta-item"><span className="meta-label">Pay To</span><span className="meta-value mono">{challenge.accepts?.[0]?.payTo ?? 'n/a'}</span></div>
+              </div>
+            ) : null}
+            {proofLink ? (
+              <p className="section-copy">
+                Proof written: <Link href={proofLink} className="nav-link active">Open latest payment proof</Link>
+              </p>
+            ) : null}
+            {paymentPreview ? (
+              <pre className="note-input mono" style={{ whiteSpace: 'pre-wrap', overflowX: 'auto' }}>{paymentPreview}</pre>
+            ) : null}
+          </div>
+
+          <div className="card">
+            <div className="card-header">
               <h2>Ready Checks</h2>
             </div>
             <div className="console-meta">
               <span className={`pill ${hasVault ? 'ok' : 'warn'}`}>Vault {hasVault ? 'Ready' : 'Missing'}</span>
               <span className={`pill ${hasConnectedMember ? 'ok' : 'warn'}`}>Member Wallet {hasConnectedMember ? 'Connected' : 'Not Connected'}</span>
-              <span className={`pill ${hasLeaseId ? 'ok' : 'warn'}`}>Lease ID {hasLeaseId ? 'Set' : 'Missing'}</span>
-              <span className={`pill ${leaseSynced ? 'ok' : 'warn'}`}>Lease {leaseSynced ? 'Synced' : 'Out of Sync'}</span>
-              <span className={`pill ${vaultLeaseSynced ? 'ok' : 'warn'}`}>Vault Lease {vaultLeaseSynced ? 'Synced' : 'Out of Sync'}</span>
+                <span className={`pill ${hasLeaseId ? 'ok' : 'warn'}`}>Policy ID {hasLeaseId ? 'Set' : 'Missing'}</span>
+              <span className={`pill ${leaseSynced ? 'ok' : 'warn'}`}>Policy {leaseSynced ? 'Synced' : 'Out of Sync'}</span>
+              <span className={`pill ${vaultLeaseSynced ? 'ok' : 'warn'}`}>Vault Policy {vaultLeaseSynced ? 'Synced' : 'Out of Sync'}</span>
               <span className={`pill ${memberPolicyReady ? 'ok' : 'warn'}`}>Member Policy {memberPolicyReady ? 'Ready' : 'Not Loaded'}</span>
               <span className={`pill ${hasToken ? 'ok' : 'warn'}`}>Token {hasToken ? 'Valid' : 'Invalid'}</span>
               <span className={`pill ${hasReceiver ? 'ok' : 'warn'}`}>Receiver {hasReceiver ? 'Valid' : 'Missing'}</span>
@@ -410,12 +777,12 @@ export function MemberTestPage({ vaultAddress, defaultLeaseId, controllerAddress
             </p>
             {liveLeaseId ? (
               <p className="section-copy mono">
-                Live lease from chain: {liveLeaseId}
+                Live policy from chain: {liveLeaseId}
               </p>
             ) : null}
             {vaultLeaseId ? (
               <p className="section-copy mono">
-                Vault lease context: {vaultLeaseId}
+                Vault policy context: {vaultLeaseId}
               </p>
             ) : null}
           </div>
@@ -441,7 +808,7 @@ export function MemberTestPage({ vaultAddress, defaultLeaseId, controllerAddress
                   </select>
                 </div>
                 <div className="form-field">
-                  <label htmlFor="lease-id" className="note-label">Lease ID</label>
+                  <label htmlFor="lease-id" className="note-label">Policy ID</label>
                   <input id="lease-id" className="note-input mono" value={leaseId} onChange={(e) => setLeaseId(e.target.value)} />
                   <div style={{ marginTop: 8 }}>
                     <button
@@ -450,7 +817,7 @@ export function MemberTestPage({ vaultAddress, defaultLeaseId, controllerAddress
                       onClick={syncLeaseFromChain}
                       disabled={syncingLease || !controller}
                     >
-                      {syncingLease ? 'Syncing Live Lease…' : 'Sync Live Lease'}
+                      {syncingLease ? 'Syncing Live Policy…' : 'Sync Live Policy'}
                     </button>
                   </div>
                 </div>

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { formatTimestamp, formatUsd, shortHash, titleCase } from '@/lib/format';
+import { formatTimestamp, formatUsd, sanitizeProofText, shortHash, titleCase } from '@/lib/format';
 import { deriveLeaseState, toneForExecution, toneForOutcome, toneForTrustZone } from '@/lib/runtime';
 import type { ProofPacket, RoundArtifactIndexEntry } from '@/lib/types';
 import { OperatorConsole } from '@/components/operator-console';
@@ -15,9 +15,13 @@ type ProofPageProps = {
   latestBlockedPacket: ProofPacket | null;
   controller: {
     address: string | null;
+    vaultAddress: string | null;
     source: 'local' | 'onchain';
     latestRequestId: string | null;
     latestTxHash: string | null;
+    consumerName: string | null;
+    operatorName: string | null;
+    chainId: number;
     actionsEnabled: boolean;
     runRoundEnabled: boolean;
     note: string | null;
@@ -32,25 +36,44 @@ function EmptyProof({ lease }: { lease: ProofPacket['lease'] | null }) {
       <h2>No Proof Packet Yet</h2>
       <p>
         {lease
-          ? 'A rule exists, but there is no generated proof packet to inspect yet.'
-          : 'The proof view has no rule or round artifacts to render.'}
+          ? 'A policy exists, but there is no generated proof packet to inspect yet.'
+          : 'The proof view has no policy or payment-check artifacts to render.'}
       </p>
       <div className="info-grid">
         <div className="info-card">
-          <div className="k">Rule Status</div>
+          <div className="k">Policy Status</div>
           <div className="v">{leaseState.label}</div>
         </div>
         <div className="info-card">
-          <div className="k">Rule ID</div>
+          <div className="k">Policy ID</div>
           <div className="v mono">{shortHash(lease?.leaseId)}</div>
         </div>
         <div className="info-card">
           <div className="k">Next Step</div>
-          <div className="v">Use the Operator Console to issue a rule and run a round</div>
+          <div className="v">Use the Operator Console to save a policy and run a governed payment check</div>
         </div>
       </div>
     </div>
   );
+}
+
+function humanizeExecutionNetwork(value?: string | null): string {
+  if (!value) return 'Onchain';
+  if (value.includes('mainnet')) return 'Mainnet';
+  if (value.includes('testnet')) return 'Testnet';
+  return 'Onchain';
+}
+
+function roundSummaryLabel(round: RoundArtifactIndexEntry): string {
+  const parts = [
+    `Policy ${shortHash(round.leaseId)}`,
+    `Request ${shortHash(round.requestId)}`,
+    `Decision ${titleCase(round.outcome)}`,
+  ];
+  if (round.txHash) {
+    parts.push(`Tx ${shortHash(round.txHash)}`);
+  }
+  return parts.join(' · ');
 }
 
 export function ProofPage({ packet, lease, currentOperator, rounds, latestSuccessRound, latestBlockedRound, latestSuccessPacket, latestBlockedPacket, controller }: ProofPageProps) {
@@ -60,9 +83,9 @@ export function ProofPage({ packet, lease, currentOperator, rounds, latestSucces
   const zoneTone = toneForTrustZone(packet?.decision.trustZone);
   const executionTone = toneForExecution(packet?.execution.status);
   const flow = [
-    { step: '1', title: 'Issue Rule', desc: 'Human sets wallet, scope, budget, expiry' },
-    { step: '2', title: 'Agent Request', desc: 'Consumer submits a structured request' },
-    { step: '3', title: 'Rule Checks', desc: 'Policy gates run before execution' },
+    { step: '1', title: 'Passport Session', desc: 'User delegates payment permission to the agent' },
+    { step: '2', title: 'Boundless Policy', desc: 'Budget, assets, counterparties, and operator mode are enforced' },
+    { step: '3', title: 'Agent Request', desc: 'The payment or execution request enters the policy gate' },
     { step: '4', title: 'Decision', desc: 'Approve, resize, block, or require review' },
     { step: '5', title: 'Receipt', desc: 'Round writes proof and optional tx hash' }
   ];
@@ -71,8 +94,8 @@ export function ProofPage({ packet, lease, currentOperator, rounds, latestSucces
     <div className="app">
       <div className="topbar">
         <div className="topbar-left">
-          <span className="topbar-label">Network</span>
-          <span className="topbar-value">X Layer {packet?.treasury.chainId ?? 196}</span>
+          <span className="topbar-label">Chain</span>
+          <span className="topbar-value">{packet?.treasury.chainId ?? 196}</span>
         </div>
         <div className="topbar-left">
           <span className="topbar-label">Operator</span>
@@ -88,7 +111,7 @@ export function ProofPage({ packet, lease, currentOperator, rounds, latestSucces
             </div>
             <div>
               <div className="logo-text">Boundless</div>
-              <div className="logo-sub">Proof Dashboard</div>
+              <div className="logo-sub">Proof Dashboard for Passport-Governed Payments</div>
             </div>
           </Link>
         </div>
@@ -111,13 +134,17 @@ export function ProofPage({ packet, lease, currentOperator, rounds, latestSucces
         actionsEnabled={controller.actionsEnabled}
         runRoundEnabled={controller.runRoundEnabled}
         controllerNote={controller.note}
+        vaultAddress={controller.vaultAddress}
+        consumerName={controller.consumerName}
+        operatorName={controller.operatorName}
+        chainId={controller.chainId}
       />
 
       <div className="card">
         <h2>Onchain Controller State</h2>
         <p>
-          This is where the chain work shows up in the product: the dashboard reads the active rule, operator posture,
-          and latest receipt anchor from the X Layer controller before falling back to bundled proof data.
+          This is where Boundless shows its job in the stack: Kite Passport handles delegated payment permission,
+          while the dashboard reads the active Boundless policy, operator posture, and latest receipt anchor from the controller contract.
         </p>
         <div className="info-grid">
           <div className="info-card">
@@ -142,7 +169,7 @@ export function ProofPage({ packet, lease, currentOperator, rounds, latestSucces
       <div className="grid-2">
         <div className="card">
           <h2>Latest Approved Evidence</h2>
-          <p>{latestSuccessPacket?.execution.note ?? 'No successful governed execution has been recorded yet.'}</p>
+          <p>{latestSuccessPacket?.execution.note ? sanitizeProofText(latestSuccessPacket.execution.note) : 'No successful Passport-governed payment has been recorded yet.'}</p>
           <div className="info-grid">
             <div className="info-card">
               <div className="k">Round</div>
@@ -161,7 +188,7 @@ export function ProofPage({ packet, lease, currentOperator, rounds, latestSucces
 
         <div className="card">
           <h2>Latest Blocked Evidence</h2>
-          <p>{latestBlockedPacket?.decision.rationale ?? 'No blocked round is currently available.'}</p>
+          <p>{latestBlockedPacket?.decision.rationale ? sanitizeProofText(latestBlockedPacket.decision.rationale) : 'No blocked round is currently available.'}</p>
           <div className="info-grid">
             <div className="info-card">
               <div className="k">Round</div>
@@ -179,8 +206,68 @@ export function ProofPage({ packet, lease, currentOperator, rounds, latestSucces
         </div>
       </div>
 
+      {packet?.passportSession || packet?.paymentAttempt ? (
+        <div className="grid-2">
+          <div className="card">
+            <h2>Passport Session Boundary</h2>
+            {packet?.passportSession ? (
+              <div className="info-grid">
+                <div className="info-card">
+                  <div className="k">Session ID</div>
+                  <div className="v mono">{shortHash(packet.passportSession.sessionId)}</div>
+                </div>
+                <div className="info-card">
+                  <div className="k">Payer</div>
+                  <div className="v mono">{shortHash(packet.passportSession.payerAddress)}</div>
+                </div>
+                <div className="info-card">
+                  <div className="k">Budget Left</div>
+                  <div className="v">{formatUsd(packet.passportSession.remainingBudgetUsd)}</div>
+                </div>
+                <div className="info-card">
+                  <div className="k">Expiry</div>
+                  <div className="v">{formatTimestamp(packet.passportSession.expiresAt)}</div>
+                </div>
+              </div>
+            ) : (
+              <p>No Passport session metadata was attached to this proof packet.</p>
+            )}
+          </div>
+          <div className="card">
+            <h2>x402 Payment Result</h2>
+            {packet?.paymentAttempt ? (
+              <div className="info-grid">
+                <div className="info-card">
+                  <div className="k">Service</div>
+                  <div className="v">{packet.paymentAttempt.merchantName ?? packet.paymentAttempt.serviceHost}</div>
+                </div>
+                <div className="info-card">
+                  <div className="k">HTTP Status</div>
+                  <div className="v">{packet.paymentAttempt.httpStatus}</div>
+                </div>
+                <div className="info-card">
+                  <div className="k">Network</div>
+                  <div className="v">{packet.paymentAttempt.network ?? 'kite-testnet'}</div>
+                </div>
+                <div className="info-card">
+                  <div className="k">X-PAYMENT</div>
+                  <div className="v">{packet.paymentAttempt.xPaymentPresent ? 'Present' : 'Missing'}</div>
+                </div>
+              </div>
+            ) : (
+              <p>No x402 attempt metadata was attached to this proof packet.</p>
+            )}
+            {packet?.paymentAttempt?.responsePreview ? (
+              <p className="section-copy mono" style={{ marginTop: 12 }}>
+                {packet.paymentAttempt.responsePreview}
+              </p>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+
       <div className="status-row">
-        <span className={`pill ${leaseState.tone}`}>Rule: {leaseState.label}</span>
+        <span className={`pill ${leaseState.tone}`}>Policy: {leaseState.label}</span>
         <span className={`pill ${executionTone}`}>Execution: {packet ? titleCase(packet.execution.status) : 'Pending'}</span>
         <span className={`pill ${outcomeTone}`}>Decision: {packet ? titleCase(packet.decision.outcome) : 'None'}</span>
         <span className={`pill ${zoneTone}`}>Zone: {packet ? titleCase(packet.decision.trustZone) : 'Unknown'}</span>
@@ -190,9 +277,9 @@ export function ProofPage({ packet, lease, currentOperator, rounds, latestSucces
         <>
           <div className="stats-bar">
             <div className="stat-card">
-              <div className="stat-label">Rule ID</div>
+              <div className="stat-label">Policy ID</div>
               <div className="stat-value">{shortHash(packet.lease.leaseId)}</div>
-              <div className="stat-note">{packet.lease.consumerName}</div>
+              <div className="stat-note">Bound agent policy</div>
             </div>
             <div className="stat-card">
               <div className="stat-label">Request</div>
@@ -227,15 +314,15 @@ export function ProofPage({ packet, lease, currentOperator, rounds, latestSucces
           </div>
 
           <div className="card">
-            <h2>Rule Envelope</h2>
+            <h2>Boundless Policy Envelope</h2>
             <div className="info-grid">
               <div className="info-card">
-                <div className="k">Rule ID</div>
+                <div className="k">Policy ID</div>
                 <div className="v mono">{shortHash(packet.lease.leaseId)}</div>
               </div>
               <div className="info-card">
-                <div className="k">Consumer</div>
-                <div className="v">{packet.lease.consumerName}</div>
+              <div className="k">Consumer</div>
+              <div className="v">Passport-powered Bound Agent</div>
               </div>
               <div className="info-card">
                 <div className="k">Wallet</div>
@@ -291,8 +378,8 @@ export function ProofPage({ packet, lease, currentOperator, rounds, latestSucces
                 <div className="v">{titleCase(packet.receipt.status)}</div>
               </div>
               <div className="info-card">
-                <div className="k">Network</div>
-                <div className="v">{titleCase(packet.execution.network)}</div>
+              <div className="k">Network</div>
+              <div className="v">{humanizeExecutionNetwork(packet.execution.network)}</div>
               </div>
               <div className="info-card">
                 <div className="k">Spent This Tx</div>
@@ -345,7 +432,7 @@ export function ProofPage({ packet, lease, currentOperator, rounds, latestSucces
                     </span>
                   </td>
                   <td className="mono">{shortHash(round.txHash)}</td>
-                  <td style={{ fontSize: '11px', color: 'var(--s1)' }}>{round.summary}</td>
+                  <td style={{ fontSize: '11px', color: 'var(--s1)' }}>{roundSummaryLabel(round)}</td>
                 </tr>
               ))
             ) : (
@@ -358,7 +445,7 @@ export function ProofPage({ packet, lease, currentOperator, rounds, latestSucces
       </div>
 
       <div className="footer">
-        Built on <a href="#">X Layer</a> · {packet?.execution.explorerUrl ? <a href={packet.execution.explorerUrl}>View latest tx</a> : 'No broadcasted tx in the latest packet'}
+        Contract-backed proof · {packet?.execution.explorerUrl ? <a href={packet.execution.explorerUrl}>View latest tx</a> : 'No broadcasted tx in the latest packet'}
       </div>
     </div>
   );

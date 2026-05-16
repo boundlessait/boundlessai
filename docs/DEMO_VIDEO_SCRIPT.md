@@ -1,74 +1,100 @@
-# Demo Video Script
+# Boundless Demo Video Script
 
 ## Length
 
 60 to 90 seconds.
 
-## Shot 1 - Problem
+## Goal
 
-"If agents are going to spend, execute, and trade autonomously, humans need more than a dashboard. They need a lease."
+Show that Boundless is the runtime governance layer that sits between Kite Passport delegation and real-money execution.
 
-Show the README header or submission page hero.
+## Route Order
 
-## Shot 2 - Lease issuance
+1. `/submission`
+2. `/member-test`
+3. `/proof`
 
-Run:
-
-```bash
-cd /Users/yanqing/Documents/GitHub/miraix-interface/projects/xlayer-trust-leases
-npm run lease:issue
-```
-
-Narration:
-
-"This lease defines exactly what the agent can do: which wallet it can use, which assets and protocols are allowed, how much it can spend per transaction, how much it can spend per day, and when the authority expires."
-
-## Shot 3 - Treasury and wallet preflight
-
-Run:
-
-```bash
-npm run preflight:treasury
-```
-
-Narration:
-
-"The project reuses the live Agentic Wallet and X Layer execution path already running in this workspace."
-
-## Shot 4 - Live round
-
-Run:
-
-```bash
-cd /Users/yanqing/Documents/GitHub/miraix-interface/projects/xlayer-strategy-office
-npm run round:live
-```
-
-Narration:
-
-"The strategy-office agent submits a real request. The trust lease checks wallet scope, asset allowlist, protocol allowlist, counterparty allowlist, price impact, budget, and expiry. Only then can live X Layer execution proceed."
-
-If a tx is broadcasted, point at the tx hash and explorer URL.
-If the lease is expired or paused, point at the blocked decision and explain that no broadcast happened.
-
-## Shot 5 - Proof surface
-
-Run:
-
-```bash
-cd /Users/yanqing/Documents/GitHub/miraix-interface/projects/xlayer-trust-leases
-npm run dev -- --port 3000
-```
+## Shot 1 - Submission / policy envelope
 
 Open:
 
-- `http://127.0.0.1:3000/submission`
-- `http://127.0.0.1:3000/proof`
+- `https://unboundai.xyz/submission`
 
 Narration:
 
-"Every strategy-office round that passes through the lease writes a receipt and a proof packet back into Trust Leases. Judges can inspect the lease envelope, request, decision, and onchain result in one place."
+> Boundless is the control layer between agent intent and real-money execution.
+> Before an agent can spend, a human defines the policy envelope first.
 
-## Closing line
+What to point at:
 
-"X Layer Trust Leases turns agent execution from open-ended wallet access into bounded, revocable authority."
+- governed wallet
+- per-tx limit
+- daily budget
+- operator mode
+- `Save Policy`
+
+## Shot 2 - Member Test / session boundary
+
+Open:
+
+- `https://unboundai.xyz/member-test`
+
+Narration:
+
+> Here we mirror the active Kite Passport session boundary: session budget, payer, and expiry.
+
+What to point at:
+
+- session boundary section
+- service URL
+- expected spend
+- reason field
+
+## Shot 3 - Prepare x402 request
+
+Action:
+
+- click `Prepare x402 Request`
+
+Narration:
+
+> Boundless checks the payment locally before it allows the request to continue.
+
+What to point at:
+
+- returned challenge
+- merchant
+- amount
+- payTo
+
+## Shot 4 - Complete paid request
+
+Action:
+
+- click `Complete Paid Request`
+
+Narration:
+
+> Once the request is inside policy, the paid action completes and Boundless writes proof.
+
+## Shot 5 - Proof
+
+Open:
+
+- `https://unboundai.xyz/proof`
+
+Narration:
+
+> The proof page shows the full chain: session, request, decision, payment result, and receipt.
+
+What to point at:
+
+- Passport Session Boundary
+- request
+- decision
+- payment result
+- proof / receipt
+
+## Closing Line
+
+> Kite Passport lets the agent pay. Boundless decides the exact rules under which that payment is allowed.

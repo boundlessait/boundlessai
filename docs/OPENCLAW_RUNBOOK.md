@@ -2,13 +2,13 @@
 
 ## Goal
 
-Run X Layer Trust Leases as a lease issuer and pre-execution gateway for the shared `xlayer-strategy-office` Agentic Wallet flow.
+Run Boundless as a lease issuer and pre-execution gateway for the shared `xlayer-bound-agent` Agentic Wallet flow.
 
 ## Environment
 
 - Server / OpenClaw: **no proxy**
 - Local machine: proxy `7890` is acceptable if GitHub or OKX routing needs it
-- Reuse the same X Layer / Agentic Wallet setup already working for `xlayer-strategy-office`
+- Reuse the same onchain / Agentic Wallet setup already working for `xlayer-bound-agent`
 
 ## Required env
 
@@ -25,7 +25,7 @@ Run X Layer Trust Leases as a lease issuer and pre-execution gateway for the sha
 ## Lease-specific env
 
 - `LEASE_EXECUTION_MODE=live`
-- `LEASE_CONSUMER_NAME=strategy-office`
+- `LEASE_CONSUMER_NAME=bound-agent`
 - `LEASE_TARGET_ALLOCATIONS=USDT0:65,USDC:25,OKB:10`
 - `LEASE_PER_TX_USD=5`
 - `LEASE_DAILY_BUDGET_USD=20`
@@ -35,14 +35,14 @@ Run X Layer Trust Leases as a lease issuer and pre-execution gateway for the sha
 ## Commands
 
 ```bash
-cd /path/to/xlayer-trust-leases
+cd /path/to/boundless
 npm install
 npm run check
 npm run lease:issue
 npm run preflight:treasury
 npm run operator:resume -- "openclaw runtime"
 
-cd /path/to/xlayer-strategy-office
+cd /path/to/xlayer-bound-agent
 npm install
 npm run check
 npm run round:live
@@ -53,7 +53,7 @@ npm run round:live
 A practical OpenClaw loop is:
 
 ```bash
-cd /path/to/xlayer-strategy-office
+cd /path/to/xlayer-bound-agent
 npm run round:live
 ```
 
@@ -61,8 +61,8 @@ Run it every 10-15 minutes.
 
 ## Outputs
 
-- `data/trust-leases/live-proof-latest.json`
-- `data/trust-leases/receipts/*.json`
-- `../xlayer-strategy-office/data/office/live-proof-latest.json`
+- `data/boundless/live-proof-latest.json`
+- `data/boundless/receipts/*.json`
+- `../xlayer-bound-agent/data/office/live-proof-latest.json`
 
-For interactive review, run the Next app in `xlayer-trust-leases` and open `/submission` plus `/proof`.
+For interactive review, run the Next app in `boundless` and open `/submission` plus `/proof`.

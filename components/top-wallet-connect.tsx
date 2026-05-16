@@ -1,20 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import {
+  KITE_TESTNET_CHAIN_ID,
+  KITE_TESTNET_EXPLORER_BASE_URL,
+  KITE_TESTNET_RPC_URL,
+} from '@/lib/chain-config';
+import type { EthereumProvider } from '@/types/ethereum-provider';
 
 const CONNECTED_WALLET_STORAGE_KEY = 'trust-leases.connected-wallet';
-
-type EthereumProvider = {
-  request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
-  on?: (event: string, handler: (...args: unknown[]) => void) => void;
-  removeListener?: (event: string, handler: (...args: unknown[]) => void) => void;
-};
-
-declare global {
-  interface Window {
-    ethereum?: EthereumProvider;
-  }
-}
 
 function shortAddress(address?: string | null): string {
   if (!address || address.length < 10) {
@@ -76,17 +70,17 @@ export function TopWalletConnect() {
       try {
         await window.ethereum.request({
           method: 'wallet_switchEthereumChain',
-          params: [{ chainId: '0xc4' }],
+          params: [{ chainId: `0x${KITE_TESTNET_CHAIN_ID.toString(16)}` }],
         });
       } catch {
         await window.ethereum.request({
           method: 'wallet_addEthereumChain',
           params: [{
-            chainId: '0xc4',
-            chainName: 'X Layer',
-            nativeCurrency: { name: 'OKB', symbol: 'OKB', decimals: 18 },
-            rpcUrls: ['https://xlayer.drpc.org'],
-            blockExplorerUrls: ['https://www.oklink.com/xlayer'],
+            chainId: `0x${KITE_TESTNET_CHAIN_ID.toString(16)}`,
+            chainName: 'KiteAI Testnet',
+            nativeCurrency: { name: 'KITE', symbol: 'KITE', decimals: 18 },
+            rpcUrls: [KITE_TESTNET_RPC_URL],
+            blockExplorerUrls: [KITE_TESTNET_EXPLORER_BASE_URL],
           }],
         });
       }
@@ -94,7 +88,7 @@ export function TopWalletConnect() {
       setWalletAddress(account);
       localStorage.setItem(CONNECTED_WALLET_STORAGE_KEY, account);
       emitWalletUpdate(account);
-      setMessage(`Connected ${shortAddress(account)} on X Layer`);
+      setMessage(`Connected ${shortAddress(account)}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Wallet connection failed.');
     } finally {
@@ -110,7 +104,7 @@ export function TopWalletConnect() {
           className="nav-wallet-btn"
           onClick={connectWallet}
           disabled={busy}
-          title={error ?? (walletAddress ? `Connected: ${walletAddress}` : 'Connect wallet on X Layer')}
+          title={error ?? (walletAddress ? `Connected: ${walletAddress}` : 'Connect wallet')}
         >
           {busy ? 'Connecting...' : walletAddress ? shortAddress(walletAddress) : 'Connect Wallet'}
         </button>

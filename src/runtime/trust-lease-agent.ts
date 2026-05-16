@@ -12,6 +12,7 @@ import { appendReceipt, listReceipts, readActiveLease, writeActiveLease } from "
 import { readOperatorState } from "./operator-state.js";
 import { buildLiveTreasurySnapshot, buildSampleTreasurySnapshot, getSettlementAccountAddress } from "../treasury/xlayer.js";
 import { controllerConfigFromRuntimeEnv, hasControllerAddress, readOnchainActiveLease, readOnchainOperator } from "../../lib/trust-lease-controller.js";
+import { networkLabelFromChainId } from "../../lib/chain-config.js";
 
 export class TrustLeaseAgent {
   readonly client: OnchainOsCliClient;
@@ -49,7 +50,7 @@ export class TrustLeaseAgent {
       return localLease;
     }
 
-    const base = localLease ?? issueLeaseFromEnv(this.env, onchainLease.wallet || walletAddress);
+    const base = issueLeaseFromEnv(this.env, onchainLease.wallet || walletAddress);
     return {
       ...base,
       leaseId: onchainLease.leaseId,
@@ -85,7 +86,7 @@ export class TrustLeaseAgent {
     };
   }
 
-  private async resolveOverview(): Promise<{ overview: PortfolioOverview; source: "onchainos" | "xlayer" | "sample" }> {
+  private async resolveOverview(): Promise<{ overview: PortfolioOverview; source: "onchainos" | "onchain" | "sample" }> {
     if (this.client.isAvailable()) {
       const overview = await this.portfolio.getBalances();
       if (overview.assets.length > 0 || overview.totalValueUsd > 0) {
@@ -106,7 +107,7 @@ export class TrustLeaseAgent {
               usdValue: balance.usdValue
             }))
           },
-          source: "xlayer"
+          source: "onchain"
         };
       }
     } catch {
@@ -204,13 +205,13 @@ export class TrustLeaseAgent {
         consumerName: lease.consumerName,
         leaseId: lease.leaseId,
         action: "rebalance",
-        assetPair: `${this.env.LEASE_DEFAULT_BASE_ASSET}/USDC`,
+        assetPair: `${this.env.LEASE_DEFAULT_BASE_ASSET}/${this.env.LEASE_DEFAULT_BASE_ASSET}`,
         fromToken: this.env.LEASE_DEFAULT_BASE_ASSET,
-        toToken: "USDC",
-        venueHint: "okx-aggregator",
-        counterparty: "okx-aggregator",
+        toToken: this.env.LEASE_DEFAULT_BASE_ASSET,
+        venueHint: "x402",
+        counterparty: "x402",
         notionalUsd: 0,
-        reason: "No material allocation drift exceeded the minimum trade threshold for this lease round."
+        reason: "No delegated payment request exceeded the minimum policy threshold for this Passport session."
       };
     }
 
@@ -224,8 +225,8 @@ export class TrustLeaseAgent {
       assetPair: `${candidate.toToken}/${candidate.fromToken}`,
       fromToken: candidate.fromToken,
       toToken: candidate.toToken,
-      venueHint: "okx-aggregator",
-      counterparty: "okx-aggregator",
+      venueHint: "x402",
+      counterparty: "x402",
       notionalUsd: Number(candidate.notionalUsd.toFixed(2)),
       reason: candidate.reason
     };
@@ -234,7 +235,7 @@ export class TrustLeaseAgent {
   private async buildExecution(input: {
     packet: ProofPacket;
     candidate: TradeCandidate | null;
-    source: "onchainos" | "xlayer" | "sample";
+    source: "onchainos" | "onchain" | "sample";
   }) {
     const intent = createExecutionIntent({ request: input.packet.request, chainId: this.env.XLAYER_CHAIN_ID });
 
@@ -243,7 +244,7 @@ export class TrustLeaseAgent {
     }
 
     if (!input.candidate) {
-      return simulatedExecutionResult({ intent, note: "No trade candidate met the lease threshold for this round." });
+      return simulatedExecutionResult({ intent, note: "No delegated payment request met the active Boundless policy in this Passport session." });
     }
 
     if (this.env.LEASE_EXECUTION_MODE !== "live" || input.source === "sample") {
@@ -276,7 +277,7 @@ export class TrustLeaseAgent {
     };
   }
 
-  async runTick(): Promise<{ packet: ProofPacket; source: "onchainos" | "xlayer" | "sample"; candidate: TradeCandidate | null; lease: LeasePolicy; }> {
+  async runTick(): Promise<{ packet: ProofPacket; source: "onchainos" | "onchain" | "sample"; candidate: TradeCandidate | null; lease: LeasePolicy; }> {
     const baseDir = this.baseDir();
     const operator = await this.resolveOperatorState();
     const { overview, source } = await this.resolveOverview();
@@ -319,11 +320,11 @@ export class TrustLeaseAgent {
             trustZone: "yellow",
             finalNotionalUsd: 0,
             policyHits: ["no_trade_candidate"],
-            rationale: "No material allocation drift produced a leaseable request in this round."
+            rationale: "No delegated payment request met the active Boundless policy in this Passport session."
           },
       execution: {
         status: "ready",
-        network: this.env.XLAYER_CHAIN_ID === 196 ? "xlayer-mainnet" : "xlayer-custom",
+        network: networkLabelFromChainId(this.env.XLAYER_CHAIN_ID),
         chainId: this.env.XLAYER_CHAIN_ID,
         note: "pending execution"
       },
@@ -360,7 +361,7 @@ export class TrustLeaseAgent {
     };
     packet.receipt = receipt;
     appendReceipt(baseDir, receipt);
-    packet.usage = this.usageWindow(lease.leaseId);
+    packet.usage = await this.usageWindow(lease.leaseId);
 
     return { packet, source, candidate, lease };
   }

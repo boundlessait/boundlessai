@@ -3,6 +3,8 @@ import { HardhatUserConfig } from 'hardhat/config';
 import '@nomicfoundation/hardhat-toolbox';
 
 const privateKey = process.env.LEASE_CONTROLLER_WRITER_PRIVATE_KEY
+  || process.env.KITE_PRIVATE_KEY
+  || process.env.KITE_SETTLEMENT_PRIVATE_KEY
   || process.env.XLAYER_PRIVATE_KEY
   || process.env.XLAYER_SETTLEMENT_PRIVATE_KEY
   || process.env.PRIVATE_KEY;
@@ -21,14 +23,14 @@ const config: HardhatUserConfig = {
     },
   },
   networks: {
-    xlayerTestnet: {
-      url: process.env.XLAYER_TESTNET_RPC_URL || 'https://testrpc.xlayer.tech',
-      chainId: 195,
+    kiteTestnet: {
+      url: process.env.KITE_RPC_URL || process.env.XLAYER_RPC_URL || 'https://rpc-testnet.gokite.ai',
+      chainId: 2368,
       accounts,
     },
-    xlayer: {
-      url: process.env.XLAYER_RPC_URL || 'https://xlayer-rpc.com',
-      chainId: 196,
+    kite: {
+      url: process.env.KITE_MAINNET_RPC_URL || 'https://rpc.gokite.ai',
+      chainId: 2366,
       accounts,
     },
   },

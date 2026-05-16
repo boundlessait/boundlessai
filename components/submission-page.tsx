@@ -9,6 +9,7 @@ import { OperatorConsole } from '@/components/operator-console';
 import { TopWalletConnect } from '@/components/top-wallet-connect';
 
 const GUIDE_STORAGE_KEY = 'boundless.dashboard.guide-seen';
+const GUIDE_SESSION_DISMISSED_KEY = 'boundless.dashboard.guide-dismissed-session';
 
 type GuideStep = {
   id: string;
@@ -24,14 +25,14 @@ const GUIDE_STEPS: GuideStep[] = [
     targetId: 'dashboard-header',
     title: 'Navigation & Wallet',
     summary: 'Connect your wallet to get started.',
-    detail: 'Click the wallet button on the top right to connect. Navigation links: Home, Proof, App.',
+    detail: 'Click the wallet button on the top right to connect. Kite Passport handles delegated payment permission, while Boundless governs the resulting payment requests here.',
   },
   {
     id: 'rule-status',
     targetId: 'sidebar-rule',
-    title: 'Current Rule Status',
-    summary: 'Shows your active rule and budget.',
-    detail: 'Displays the protected wallet address, daily budget, per-tx limit, and operator mode. The progress bar shows spent vs remaining budget.',
+    title: 'Current Policy Status',
+    summary: 'Shows your active Boundless policy and budget.',
+    detail: 'Displays the protected wallet address, daily budget, per-tx limit, and operator mode layered on top of a Passport-backed payment session.',
   },
   {
     id: 'operator-mode',
@@ -51,8 +52,8 @@ const GUIDE_STEPS: GuideStep[] = [
     id: 'controls',
     targetId: 'controls-section',
     title: 'Controls Panel',
-    summary: 'Configure and execute rule operations.',
-    detail: 'Set wallet, budget, assets, protocols. Save rule onchain. Pause/Review/Resume operator. Run test rounds.',
+    summary: 'Configure Boundless policy operations.',
+    detail: 'Set wallet, budget, assets, protocols. Save policy onchain. Pause/Review/Resume operator. Run governed payment checks.',
   },
   {
     id: 'activity',
@@ -62,6 +63,26 @@ const GUIDE_STEPS: GuideStep[] = [
     detail: 'Shows the last 5 actions with their outcome (Approved/Blocked/Resized). Click "View History" for full log.',
   },
 ];
+
+function resolveGuideTargetElement(targetId: string): HTMLElement | null {
+  return document.getElementById(targetId);
+}
+
+function clampGuideCardPosition(rect: DOMRect): { top: number; left: number } {
+  const viewportPadding = 16;
+  const cardWidth = Math.min(320, window.innerWidth - viewportPadding * 2);
+  const cardHeight = 240;
+  const nextLeft = Math.min(
+    window.innerWidth - cardWidth - viewportPadding,
+    Math.max(viewportPadding, rect.left),
+  );
+  const hasBottomSpace = rect.bottom + cardHeight + 12 < window.innerHeight;
+  const nextTop = hasBottomSpace
+    ? rect.bottom + 12
+    : Math.max(viewportPadding, rect.top - cardHeight - 12);
+
+  return { top: nextTop, left: nextLeft };
+}
 
 type SubmissionPageProps = {
   packet: ProofPacket | null;
@@ -74,9 +95,13 @@ type SubmissionPageProps = {
   latestBlockedPacket: ProofPacket | null;
   controller: {
     address: string | null;
+    vaultAddress: string | null;
     source: 'local' | 'onchain';
     latestRequestId: string | null;
     latestTxHash: string | null;
+    consumerName: string | null;
+    operatorName: string | null;
+    chainId: number;
     actionsEnabled: boolean;
     runRoundEnabled: boolean;
     note: string | null;
@@ -86,7 +111,7 @@ type SubmissionPageProps = {
 function modeMeaning(mode?: string | null): string {
   switch (mode) {
     case 'active':
-      return 'Agent may execute if each request stays inside your rule.';
+      return 'Agent may execute if each request stays inside the active Boundless policy.';
     case 'review':
       return 'Every request should pause for human review before execution.';
     case 'paused':
@@ -98,7 +123,7 @@ function modeMeaning(mode?: string | null): string {
 
 function nextGateLabel(mode?: string | null, leaseStatus?: string | null): string {
   if (leaseStatus !== 'active') {
-    return 'No action can execute until you issue an active rule.';
+    return 'No action can execute until you save an active policy.';
   }
   switch (mode) {
     case 'review':
@@ -110,6 +135,18 @@ function nextGateLabel(mode?: string | null, leaseStatus?: string | null): strin
     default:
       return 'Operator posture is not set yet.';
   }
+}
+
+function roundSummaryLabel(round: RoundArtifactIndexEntry): string {
+  const parts = [
+    `Policy ${shortHash(round.leaseId)}`,
+    `Request ${shortHash(round.requestId)}`,
+    `Decision ${titleCase(round.outcome)}`,
+  ];
+  if (round.txHash) {
+    parts.push(`Tx ${shortHash(round.txHash)}`);
+  }
+  return parts.join(' · ');
 }
 
 export function SubmissionPage({
@@ -131,7 +168,8 @@ export function SubmissionPage({
   // Show guide on first load
   useEffect(() => {
     const seen = window.localStorage.getItem(GUIDE_STORAGE_KEY);
-    if (!seen) {
+    const dismissedForSession = window.sessionStorage.getItem(GUIDE_SESSION_DISMISSED_KEY);
+    if (!seen && !dismissedForSession) {
       setGuideStepIndex(0);
       setGuideOpen(true);
     }
@@ -145,45 +183,55 @@ export function SubmissionPage({
       return;
     }
 
-    const refresh = () => {
+    const measure = () => {
       const step = GUIDE_STEPS[guideStepIndex];
-      const target = document.getElementById(step.targetId);
+      const target = resolveGuideTargetElement(step.targetId);
       if (!target) {
         setGuideTargetRect(null);
         setGuideCardPosition({ top: 100, left: 24 });
         return;
       }
-
-      target.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
       const rect = target.getBoundingClientRect();
       setGuideTargetRect(rect);
-
-      const cardWidth = 340;
-      const viewportPadding = 16;
-      const nextLeft = Math.min(
-        window.innerWidth - cardWidth - viewportPadding,
-        Math.max(viewportPadding, rect.left),
-      );
-      const hasBottomSpace = rect.bottom + 240 < window.innerHeight;
-      const nextTop = hasBottomSpace
-        ? rect.bottom + 12
-        : Math.max(viewportPadding, rect.top - 240);
-
-      setGuideCardPosition({ top: nextTop, left: nextLeft });
+      setGuideCardPosition(clampGuideCardPosition(rect));
     };
 
-    const timer = window.setTimeout(refresh, 150);
-    window.addEventListener('resize', refresh);
-    window.addEventListener('scroll', refresh, true);
+    const step = GUIDE_STEPS[guideStepIndex];
+    const target = resolveGuideTargetElement(step.targetId);
+    target?.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+
+    const timer = window.setTimeout(measure, 180);
+    window.addEventListener('resize', measure);
+    window.addEventListener('scroll', measure, true);
     return () => {
       window.clearTimeout(timer);
-      window.removeEventListener('resize', refresh);
-      window.removeEventListener('scroll', refresh, true);
+      window.removeEventListener('resize', measure);
+      window.removeEventListener('scroll', measure, true);
     };
+  }, [guideOpen, guideStepIndex]);
+
+  useEffect(() => {
+    if (!guideOpen) {
+      return;
+    }
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        closeGuide(false);
+      } else if (event.key === 'ArrowLeft' && guideStepIndex > 0) {
+        setGuideStepIndex((prev) => prev - 1);
+      } else if (event.key === 'ArrowRight') {
+        nextGuideStep();
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
   }, [guideOpen, guideStepIndex]);
 
   function closeGuide(markSeen = true) {
     setGuideOpen(false);
+    window.sessionStorage.setItem(GUIDE_SESSION_DISMISSED_KEY, '1');
     if (markSeen) {
       window.localStorage.setItem(GUIDE_STORAGE_KEY, '1');
     }
@@ -198,16 +246,32 @@ export function SubmissionPage({
   }
 
   function openGuide() {
+    window.sessionStorage.removeItem(GUIDE_SESSION_DISMISSED_KEY);
     setGuideStepIndex(0);
     setGuideOpen(true);
+  }
+
+  function previousGuideStep() {
+    setGuideStepIndex((prev) => Math.max(0, prev - 1));
   }
 
   const liveLease = lease ?? packet?.lease ?? null;
   const currentMode = currentOperator?.mode ?? packet?.operator.mode ?? null;
   const leaseState = deriveLeaseState(liveLease, currentMode ?? undefined);
-  const spentUsd = packet?.usage.spent24hUsd ?? 0;
+  const currentLeaseId = liveLease?.leaseId ?? null;
+  const packetMatchesLiveLease = Boolean(
+    currentLeaseId &&
+    packet?.lease.leaseId &&
+    packet.lease.leaseId === currentLeaseId,
+  );
+  const currentLeaseRounds = currentLeaseId
+    ? rounds.filter((round) => round.leaseId === currentLeaseId)
+    : rounds;
+  const spentUsd = packetMatchesLiveLease ? (packet?.usage.spent24hUsd ?? 0) : 0;
   const dailyBudgetUsd = liveLease?.dailyBudgetUsd ?? 0;
-  const remainingDailyUsd = packet?.usage.remainingDailyUsd ?? dailyBudgetUsd;
+  const remainingDailyUsd = packetMatchesLiveLease
+    ? (packet?.usage.remainingDailyUsd ?? dailyBudgetUsd)
+    : dailyBudgetUsd;
   const spentPercent = ratio(spentUsd, dailyBudgetUsd);
   const remainingPercent = ratio(remainingDailyUsd, dailyBudgetUsd);
 
@@ -228,9 +292,9 @@ export function SubmissionPage({
   const proofOutcomeTone = toneForOutcome(historicalReferencePacket?.decision.outcome);
   const proofZoneTone = toneForTrustZone(historicalReferencePacket?.decision.trustZone);
   const proofExecutionTone = toneForExecution(historicalReferencePacket?.execution.status);
-  const approvedCount = rounds.filter((round) => round.outcome === 'approve').length;
-  const blockedCount = rounds.filter((round) => round.outcome === 'block').length;
-  const resizeCount = rounds.filter((round) => round.outcome === 'resize').length;
+  const approvedCount = currentLeaseRounds.filter((round) => round.outcome === 'approve').length;
+  const blockedCount = currentLeaseRounds.filter((round) => round.outcome === 'block').length;
+  const resizeCount = currentLeaseRounds.filter((round) => round.outcome === 'resize').length;
 
   return (
     <div className="app">
@@ -241,7 +305,7 @@ export function SubmissionPage({
           </div>
           <div>
             <div className="logo-text">Boundless</div>
-            <div className="logo-sub">Agent Execution Guard</div>
+            <div className="logo-sub">Governed Agent Finance for Kite Passport</div>
           </div>
         </div>
         <div className="header-right">
@@ -266,7 +330,7 @@ export function SubmissionPage({
         <aside className="dashboard-sidebar">
           <div className="card sidebar-card" id="sidebar-rule">
             <div className="card-header">
-              <h2>Current Rule</h2>
+              <h2>Current Boundless Policy</h2>
               <span className={`status-badge ${leaseState.tone}`}>{leaseState.label}</span>
             </div>
             <div className="sidebar-meta">
@@ -316,13 +380,40 @@ export function SubmissionPage({
               </button>
             </div>
             <p className="mode-hint">{modeMeaning(currentMode)}</p>
+            <p className="mode-hint" style={{ marginTop: 10 }}>
+              Passport handles delegated payment permission. Operator Mode is the extra human control layer that Boundless adds before execution.
+            </p>
           </div>
         </aside>
 
         <main className="dashboard-main">
+          <div className="card">
+            <div className="card-header">
+              <h2>Architecture</h2>
+            </div>
+            <div className="sidebar-meta">
+              <div className="meta-item">
+                <span className="meta-label">1. Kite Passport</span>
+                <span className="meta-value">Identity, delegated payment permission, session scope</span>
+              </div>
+              <div className="meta-item">
+                <span className="meta-label">2. Boundless Policy</span>
+                <span className="meta-value">Per-action limit, daily budget, allowed assets, operator review</span>
+              </div>
+              <div className="meta-item">
+                <span className="meta-label">3. Execution</span>
+                <span className="meta-value">Allowed requests continue, blocked requests stop before settlement</span>
+              </div>
+              <div className="meta-item">
+                <span className="meta-label">4. Proof</span>
+                <span className="meta-value">Both outcomes are written as receipts and evidence</span>
+              </div>
+            </div>
+          </div>
+
           <div className="stats-bar" id="dashboard-stats">
             <div className="stat-card">
-              <div className="stat-label">Rule Status</div>
+              <div className="stat-label">Policy Status</div>
               <div className={`stat-value ${leaseState.tone === 'ok' ? 'green' : 'amber'}`}>{leaseState.label}</div>
             </div>
             <div className="stat-card">
@@ -345,7 +436,11 @@ export function SubmissionPage({
             leaseStatus={liveLease?.status}
             operatorMode={currentMode}
             latestSuccessTxHash={latestSuccessRound?.txHash}
-            latestBlockedReason={latestBlockedPacket?.decision.rationale}
+            latestBlockedReason={
+              latestBlockedPacket?.lease.leaseId === currentLeaseId
+                ? latestBlockedPacket?.decision.rationale
+                : null
+            }
             controllerAddress={controller.address}
             controllerSource={controller.source}
             governedWallet={liveLease?.walletAddress}
@@ -357,11 +452,15 @@ export function SubmissionPage({
             actionsEnabled={controller.actionsEnabled}
             runRoundEnabled={controller.runRoundEnabled}
             controllerNote={controller.note}
+            vaultAddress={controller.vaultAddress}
+            consumerName={controller.consumerName}
+            operatorName={controller.operatorName}
+            chainId={controller.chainId}
           />
 
           {showHistoricalMismatch ? (
             <div className="response-banner error">
-              Historical proof is from an older rule. Live wallet: {shortHash(liveLease?.walletAddress)}
+              Historical proof is from an older policy. Live wallet: {shortHash(liveLease?.walletAddress)}
             </div>
           ) : null}
           </div>
@@ -371,12 +470,12 @@ export function SubmissionPage({
               <h2>Latest Activity</h2>
             </div>
             <div className="activity-feed" id="dashboard-activity">
-              {rounds.length > 0 ? (
-                rounds.slice(0, 5).map((round) => (
+              {currentLeaseRounds.length > 0 ? (
+                currentLeaseRounds.slice(0, 5).map((round) => (
                   <div key={`${round.generatedAt}-${round.requestId}-feed`} className="activity-row">
                     <div className="activity-main">
                       <span className={`pill ${toneForOutcome(round.outcome)}`}>{titleCase(round.outcome)}</span>
-                      <span className="activity-summary">{round.summary}</span>
+                      <span className="activity-summary">{roundSummaryLabel(round)}</span>
                     </div>
                     <div className="activity-meta">
                       <span>{formatTimestamp(round.generatedAt)}</span>
@@ -385,7 +484,7 @@ export function SubmissionPage({
                   </div>
                 ))
               ) : (
-                <div className="empty-state">No activity yet</div>
+                <div className="empty-state">No activity yet for the current policy</div>
               )}
             </div>
           </div>
@@ -402,8 +501,8 @@ export function SubmissionPage({
                 </tr>
               </thead>
               <tbody>
-                {rounds.length > 0 ? (
-                  rounds.map((round) => (
+                {currentLeaseRounds.length > 0 ? (
+                  currentLeaseRounds.map((round) => (
                     <tr key={`${round.generatedAt}-${round.requestId}`}>
                       <td>{formatTimestamp(round.generatedAt)}</td>
                       <td>
@@ -412,12 +511,12 @@ export function SubmissionPage({
                         </span>
                       </td>
                       <td className="mono">{shortHash(round.txHash)}</td>
-                      <td className="history-summary-cell">{round.summary}</td>
+                      <td className="history-summary-cell">{roundSummaryLabel(round)}</td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={4} style={{ color: 'var(--s2)' }}>No rounds recorded yet.</td>
+                    <td colSpan={4} style={{ color: 'var(--s2)' }}>No rounds recorded yet for the current policy.</td>
                   </tr>
                 )}
               </tbody>
@@ -427,12 +526,16 @@ export function SubmissionPage({
       </div>
 
       <div className="footer">
-        Built on <a href="#">X Layer</a> · Reads the controller contract plus runtime proof artifacts
+        Kite Passport for delegation · Boundless for policy and proof
       </div>
 
       {/* Guide Overlay */}
       {guideOpen && (
-        <div className="guide-overlay">
+        <div
+          className="guide-overlay"
+          onClick={() => closeGuide(false)}
+          role="presentation"
+        >
           {guideTargetRect && (
             <div
               className="guide-highlight"
@@ -451,6 +554,10 @@ export function SubmissionPage({
                 top: guideCardPosition.top,
                 left: guideCardPosition.left,
               }}
+              onClick={(event) => event.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Boundless guide"
             >
               <div className="guide-step-meta">
                 Step {guideStepIndex + 1} of {GUIDE_STEPS.length}
@@ -460,6 +567,16 @@ export function SubmissionPage({
               <p className="guide-detail">{GUIDE_STEPS[guideStepIndex].detail}</p>
               <div className="guide-actions">
                 <button className="guide-btn-secondary" onClick={() => closeGuide(false)}>
+                  Close
+                </button>
+                <button
+                  className="guide-btn-secondary"
+                  onClick={previousGuideStep}
+                  disabled={guideStepIndex === 0}
+                >
+                  Back
+                </button>
+                <button className="guide-btn-secondary" onClick={() => closeGuide(true)}>
                   Skip
                 </button>
                 <button className="guide-btn-primary" onClick={nextGuideStep}>

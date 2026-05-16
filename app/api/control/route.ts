@@ -4,6 +4,7 @@ import crypto from 'node:crypto';
 import { isAddress, type Address } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { getSiteData, writeCanonicalLatestIfNeeded } from '@/lib/site-data';
+import { resolveProjectRoot } from '@/lib/project-root';
 import { canWriteController, issueLeaseOnchain, readControllerConfig, readOnchainActiveLease, setLeaseStatusOnchain, setOperatorModeOnchain } from '@/lib/trust-lease-controller';
 import { readBoundlessVaultConfig, setLeaseContextOnchain, setMemberPolicyOnchain } from '@/lib/boundless-vault';
 import { parseCsvList, readRuntimeEnv } from '../../../src/config/env';
@@ -42,7 +43,7 @@ function isHostedReadonlyRuntime(): boolean {
 
 function runCommand(args: string[]): string {
   return execFileSync(args[0], args.slice(1), {
-    cwd: process.cwd(),
+    cwd: resolveProjectRoot(),
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
     env: process.env,
@@ -137,11 +138,14 @@ function buildHostedLease(
 
 function publicControlError(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error);
+  if (/Could not read package\.json|ENOENT: no such file or directory, open .*package\.json/i.test(message)) {
+    return 'Boundless control command resolved the wrong working directory. The app now pins commands to the project root; refresh and try again.';
+  }
   if (/nonce too low|nonce provided|tx nonce|next nonce|already been used|nonce has already been used/i.test(message)) {
-    return 'X Layer controller nonce moved while writing. The app now retries with the pending nonce; wait a few seconds and click once more if this request was already in flight.';
+    return 'Controller nonce moved while writing. The app now retries with the pending nonce; wait a few seconds and click once more if this request was already in flight.';
   }
   if (/insufficient funds|exceeds the balance|fee cap/i.test(message)) {
-    return 'The controller wallet needs more OKB for X Layer gas before this action can be written onchain.';
+    return 'The controller wallet needs more native gas balance before this action can be written onchain.';
   }
   if (/user rejected|denied transaction/i.test(message)) {
     return 'Wallet signature was rejected.';
@@ -163,7 +167,7 @@ async function runHostedControlAction(
   const controllerConfig = readControllerConfig(process.env);
 
   if (!canWriteController(controllerConfig)) {
-    throw new Error('Hosted control requires a configured X Layer controller writer.');
+    throw new Error('Hosted control requires a configured controller writer.');
   }
 
   switch (action) {
@@ -173,7 +177,7 @@ async function runHostedControlAction(
         ? requestedWalletAddress
         : env.XLAYER_TREASURY_ADDRESS || getHostedSettlementAddress(env);
       if (!walletAddress) {
-        throw new Error('Missing treasury wallet address for hosted lease issuance.');
+        throw new Error('Missing governed wallet address for hosted policy issuance.');
       }
       const issuedLease = buildHostedLease(env, walletAddress, note, leaseOverrides);
       const txHash = await issueLeaseOnchain(controllerConfig, issuedLease);
@@ -197,7 +201,7 @@ async function runHostedControlAction(
     case 'revoke-lease': {
       const activeLease = await readOnchainActiveLease(controllerConfig, env.LEASE_CONSUMER_NAME);
       if (!activeLease) {
-        throw new Error('No active onchain lease to revoke.');
+        throw new Error('No active onchain policy to disable.');
       }
       const txHash = await setLeaseStatusOnchain(controllerConfig, activeLease.leaseId, 'revoked', note);
       return `controller_tx=${txHash}`;
@@ -241,7 +245,7 @@ async function runHostedControlAction(
       return `vault_tx=${txHash}`;
     }
     case 'run-round':
-      throw new Error('Hosted run-round is not enabled yet. Use a writable runner for live or simulated round execution.');
+      throw new Error('Hosted payment check is not enabled yet. Use a writable runner for live or simulated execution.');
     default:
       throw new Error('Unsupported hosted action.');
   }
@@ -270,9 +274,9 @@ async function buildSummary() {
 function humanMessage(action: ControlAction, summary: Awaited<ReturnType<typeof buildSummary>>): string {
   switch (action) {
     case 'issue-lease':
-      return summary.leaseId ? `Lease issued: ${summary.leaseId}` : 'Lease issued.';
+      return summary.leaseId ? `Policy saved: ${summary.leaseId}` : 'Policy saved.';
     case 'revoke-lease':
-      return summary.leaseId ? `Lease revoked: ${summary.leaseId}` : 'Lease revoked.';
+      return summary.leaseId ? `Policy disabled: ${summary.leaseId}` : 'Policy disabled.';
     case 'pause':
       return 'Operator moved to pause mode.';
     case 'review':
@@ -281,12 +285,12 @@ function humanMessage(action: ControlAction, summary: Awaited<ReturnType<typeof 
       return 'Operator resumed active mode.';
     case 'run-round':
       if (summary.latestOutcome === 'block' && summary.latestBlockedReason) {
-        return `Round completed with guardrail block: ${summary.latestBlockedReason}`;
+        return `Payment check completed with guardrail block: ${summary.latestBlockedReason}`;
       }
       if (summary.latestSuccessTxHash) {
-        return `Governed round complete. Latest success tx: ${summary.latestSuccessTxHash}`;
+        return `Governed payment check complete. Latest success tx: ${summary.latestSuccessTxHash}`;
       }
-      return 'Governed round complete.';
+      return 'Governed payment check complete.';
     case 'refresh-proof':
       return 'Visible proof refreshed from current artifacts.';
     case 'set-member-policy':

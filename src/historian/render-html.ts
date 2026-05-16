@@ -47,6 +47,8 @@ export function buildProofDashboardHtml(input: {
   index: RoundArtifactIndexEntry[];
 }): string {
   const { packet, index } = input;
+  const spent24hUsd = typeof packet.usage?.spent24hUsd === "number" ? packet.usage.spent24hUsd : 0;
+  const remainingDailyUsd = typeof packet.usage?.remainingDailyUsd === "number" ? packet.usage.remainingDailyUsd : 0;
 
   return `<!doctype html>
 <html lang="en">
@@ -94,17 +96,17 @@ export function buildProofDashboardHtml(input: {
   <body>
     <div class="wrap">
       <section class="hero">
-        <div style="text-transform: uppercase; letter-spacing: .14em; color: var(--muted); font-size: 12px;">Human trust leases · X Layer</div>
+        <div style="text-transform: uppercase; letter-spacing: .14em; color: var(--muted); font-size: 12px;">Governed agent finance · onchain</div>
         <h1>${escapeHtml(packet.product)}</h1>
         <p style="color: var(--muted); line-height: 1.55;">
-          A human-issued lease gates live X Layer agent execution before funds move. Each round binds budget, protocol, counterparty,
+          A human-issued rule gates live onchain agent execution before funds move. Each round binds budget, protocol, counterparty,
           expiry, and wallet scope into one lease, then writes a proof-backed receipt.
         </p>
         <div class="metrics">
           <div class="metric"><div class="label">Lease outcome</div><div class="value">${escapeHtml(packet.decision.outcome)}</div></div>
           <div class="metric"><div class="label">Trust zone</div><div class="value">${escapeHtml(packet.decision.trustZone)}</div></div>
-          <div class="metric"><div class="label">Spent 24h</div><div class="value">$${packet.usage.spent24hUsd.toFixed(2)}</div></div>
-          <div class="metric"><div class="label">Remaining</div><div class="value">$${packet.usage.remainingDailyUsd.toFixed(2)}</div></div>
+          <div class="metric"><div class="label">Spent 24h</div><div class="value">$${spent24hUsd.toFixed(2)}</div></div>
+          <div class="metric"><div class="label">Remaining</div><div class="value">$${remainingDailyUsd.toFixed(2)}</div></div>
           <div class="metric"><div class="label">Execution</div><div class="value">${escapeHtml(packet.execution.status)}</div></div>
         </div>
       </section>

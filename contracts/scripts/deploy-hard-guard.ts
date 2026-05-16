@@ -15,7 +15,7 @@ async function main(): Promise<void> {
   const controller = await controllerFactory.deploy(deployer.address);
   await controller.waitForDeployment();
 
-  const consumerName = process.env.LEASE_CONSUMER_NAME || 'strategy-office';
+  const consumerName = process.env.LEASE_CONSUMER_NAME || 'bound-agent';
   const operatorName = process.env.LEASE_OPERATOR_NAME || 'human-principal';
   const vaultOwner = requireEnv('BOUNDLESS_VAULT_OWNER');
 

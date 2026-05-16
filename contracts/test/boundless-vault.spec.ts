@@ -13,7 +13,7 @@ describe("BoundlessVault hard guard", () => {
     const vault = await vaultFactory.deploy(
       await controller.getAddress(),
       owner.address,
-      "strategy-office",
+      "bound-agent",
       "human-principal",
     );
     await vault.waitForDeployment();
@@ -45,9 +45,9 @@ describe("BoundlessVault hard guard", () => {
     const daily = options?.dailyUsd6 ?? BigInt(5_000_000);
     await (await ctx.controller.issueLease(
       "lease_demo_1",
-      "strategy-office",
+      "bound-agent",
       await ctx.vault.getAddress(),
-      "USDT0",
+      "USDT",
       BigInt(Math.floor(Date.now() / 1000) + 24 * 3600),
       perTx,
       daily,
@@ -55,7 +55,7 @@ describe("BoundlessVault hard guard", () => {
       ethers.ZeroHash,
     )).wait();
     await (await ctx.controller.setOperatorMode("human-principal", 1, ethers.ZeroHash)).wait();
-    await (await ctx.vault.setLeaseContext("lease_demo_1", "strategy-office", "human-principal")).wait();
+    await (await ctx.vault.setLeaseContext("lease_demo_1", "bound-agent", "human-principal")).wait();
   }
 
   it("allows member execution within member and global budgets", async () => {

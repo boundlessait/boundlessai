@@ -1,16 +1,22 @@
 import fs from "node:fs";
 import path from "node:path";
 import { z } from "zod";
+import {
+  KITE_TESTNET_CHAIN_ID,
+  KITE_TESTNET_EXPLORER_BASE_URL,
+  KITE_TESTNET_RPC_URL,
+  KITE_TESTNET_USDT_ADDRESS,
+} from "../../lib/chain-config";
 
 const RuntimeEnvSchema = z.object({
-  XLAYER_RPC_URL: z.string().default("https://xlayer.drpc.org"),
-  XLAYER_CHAIN_ID: z.coerce.number().int().positive().default(196),
-  XLAYER_EXPLORER_BASE_URL: z.string().default("https://www.oklink.com/xlayer"),
+  XLAYER_RPC_URL: z.string().default(KITE_TESTNET_RPC_URL),
+  XLAYER_CHAIN_ID: z.coerce.number().int().positive().default(KITE_TESTNET_CHAIN_ID),
+  XLAYER_EXPLORER_BASE_URL: z.string().default(KITE_TESTNET_EXPLORER_BASE_URL),
   XLAYER_SETTLEMENT_PRIVATE_KEY: z.string().optional(),
   XLAYER_PRIVATE_KEY: z.string().optional(),
   XLAYER_TREASURY_ADDRESS: z.string().optional(),
-  XLAYER_SETTLEMENT_TOKEN_ADDRESS: z.string().optional(),
-  XLAYER_SETTLEMENT_TOKEN_SYMBOL: z.string().default("USDC"),
+  XLAYER_SETTLEMENT_TOKEN_ADDRESS: z.string().default(KITE_TESTNET_USDT_ADDRESS),
+  XLAYER_SETTLEMENT_TOKEN_SYMBOL: z.string().default("USDT"),
   XLAYER_SETTLEMENT_TOKEN_DECIMALS: z.coerce.number().int().nonnegative().default(6),
   LEASE_CHAIN_SYNC_ENABLED: z.coerce.boolean().default(false),
   LEASE_CONTROLLER_ADDRESS: z.string().optional(),
@@ -21,17 +27,17 @@ const RuntimeEnvSchema = z.object({
   BOUNDLESS_VAULT_ADDRESS: z.string().optional(),
   BOUNDLESS_VAULT_WRITER_PRIVATE_KEY: z.string().optional(),
   LEASE_ENV: z.enum(["development", "staging", "production"]).default("development"),
-  LEASE_NAME: z.string().default("xlayer-trust-leases"),
+  LEASE_NAME: z.string().default("boundless"),
   LEASE_DATA_DIR: z.string().default("data/trust-leases"),
   LEASE_OPERATOR_NAME: z.string().default("human-principal"),
   LEASE_EXECUTION_MODE: z.enum(["simulate", "live"]).default("simulate"),
-  LEASE_DEFAULT_BASE_ASSET: z.string().default("USDT0"),
-  LEASE_CONSUMER_NAME: z.string().default("strategy-office"),
-  LEASE_TARGET_ALLOCATIONS: z.string().default("USDT0:65,USDC:25,OKB:10"),
-  LEASE_ALLOWED_ASSETS: z.string().default("USDT0,USDC,OKB"),
-  LEASE_ALLOWED_PROTOCOLS: z.string().default("okx-aggregator,quickswap"),
+  LEASE_DEFAULT_BASE_ASSET: z.string().default("USDT"),
+  LEASE_CONSUMER_NAME: z.string().default("bound-agent"),
+  LEASE_TARGET_ALLOCATIONS: z.string().default("USDT:100"),
+  LEASE_ALLOWED_ASSETS: z.string().default("USDT"),
+  LEASE_ALLOWED_PROTOCOLS: z.string().default("x402,mcp"),
   LEASE_ALLOWED_ACTIONS: z.string().default("buy,sell,rebalance"),
-  LEASE_ALLOWED_COUNTERPARTIES: z.string().default("okx-aggregator,quickswap"),
+  LEASE_ALLOWED_COUNTERPARTIES: z.string().default("x402,mcp"),
   LEASE_PER_TX_USD: z.coerce.number().positive().default(5),
   LEASE_DAILY_BUDGET_USD: z.coerce.number().positive().default(20),
   LEASE_EXPIRY_HOURS: z.coerce.number().positive().default(24),
@@ -43,7 +49,7 @@ const RuntimeEnvSchema = z.object({
   LEASE_ISSUER_LABEL: z.string().default("human-principal"),
   LEASE_NOTES: z
     .string()
-    .default("Bounded X Layer execution lease for treasury rebalance and low-notional agent actions.")
+    .default("Bounded agent finance rule for governed payments and controlled execution.")
 });
 
 export type RuntimeEnv = z.infer<typeof RuntimeEnvSchema>;
@@ -77,6 +83,16 @@ function parseEnvFile(content: string): Record<string, string> {
 
 function withCompatAliases(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
   const next = { ...env };
+
+  next.XLAYER_RPC_URL = env.KITE_RPC_URL || next.XLAYER_RPC_URL;
+  next.XLAYER_CHAIN_ID = env.KITE_CHAIN_ID || next.XLAYER_CHAIN_ID;
+  next.XLAYER_EXPLORER_BASE_URL = env.KITE_EXPLORER_BASE_URL || next.XLAYER_EXPLORER_BASE_URL;
+  next.XLAYER_PRIVATE_KEY = env.KITE_PRIVATE_KEY || next.XLAYER_PRIVATE_KEY;
+  next.XLAYER_SETTLEMENT_PRIVATE_KEY = env.KITE_SETTLEMENT_PRIVATE_KEY || next.XLAYER_SETTLEMENT_PRIVATE_KEY;
+  next.XLAYER_TREASURY_ADDRESS = env.KITE_TREASURY_ADDRESS || next.XLAYER_TREASURY_ADDRESS;
+  next.XLAYER_SETTLEMENT_TOKEN_ADDRESS = env.KITE_SETTLEMENT_TOKEN_ADDRESS || next.XLAYER_SETTLEMENT_TOKEN_ADDRESS;
+  next.XLAYER_SETTLEMENT_TOKEN_SYMBOL = env.KITE_SETTLEMENT_TOKEN_SYMBOL || next.XLAYER_SETTLEMENT_TOKEN_SYMBOL;
+  next.XLAYER_SETTLEMENT_TOKEN_DECIMALS = env.KITE_SETTLEMENT_TOKEN_DECIMALS || next.XLAYER_SETTLEMENT_TOKEN_DECIMALS;
 
   next.LEASE_EXECUTION_MODE ??= env.OFFICE_EXECUTION_MODE;
   next.LEASE_DEFAULT_BASE_ASSET ??= env.OFFICE_DEFAULT_BASE_ASSET;

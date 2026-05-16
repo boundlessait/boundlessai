@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>xlayer-trust-leases Submission Surface</title>
+    <title>boundless Submission Surface</title>
     <style>
       :root { --bg: #f5f2ea; --panel: #fffaf0; --ink: #1a1916; --muted: #656055; --line: #d7cfbe; --accent: #9b3d24; }
       * { box-sizing: border-box; }
@@ -38,18 +38,18 @@
   <body>
     <div class="wrap">
       <section class="hero">
-        <div class="eyebrow">X Layer Human Track Submission</div>
-        <h1>xlayer-trust-leases</h1>
+        <div class="eyebrow">Governed Agent Finance Submission</div>
+        <h1>boundless</h1>
         <p>
-          A human-issued lease defines exactly what an agent can do on X Layer: which wallet, which assets, which protocols,
+          A human-issued rule defines exactly what an agent can do onchain: which wallet, which assets, which protocols,
           how much per tx, how much per day, and when the authority expires. Each round produces a receipt with policy checks,
           the lease decision, and optional onchain proof.
         </p>
         <div class="hero-grid">
-          <div class="metric"><div class="label">Consumer</div><div class="value">strategy-office</div></div>
+          <div class="metric"><div class="label">Consumer</div><div class="value">bound-agent</div></div>
           <div class="metric"><div class="label">Outcome</div><div class="value">block</div></div>
           <div class="metric"><div class="label">Trust Zone</div><div class="value">yellow</div></div>
-          <div class="metric"><div class="label">Execution</div><div class="value">simulated</div></div>
+          <div class="metric"><div class="label">Execution</div><div class="value">blocked</div></div>
         </div>
       </section>
 
@@ -70,10 +70,10 @@
 
         <article class="panel span-5">
           <h2>Latest Round</h2>
-          <p><strong>Request:</strong> USDT0/USDC via okx-aggregator</p>
+          <p><strong>Request:</strong> USDT/USDT via x402</p>
           <p><strong>Requested:</strong> $0</p>
           <p><strong>Final:</strong> $0</p>
-          <p><strong>Rationale:</strong> No material allocation drift produced a leaseable strategy-office request in this round.</p>
+          <p><strong>Rationale:</strong> No delegated payment request met the active Boundless policy in this Passport session.</p>
           <div class="link-row" style="margin-top:14px;">
             <a href="./proof-dashboard.html">Open Proof Dashboard</a>
             <a href="./live-proof-latest.json">Open Latest JSON</a>
@@ -82,19 +82,19 @@
 
         <article class="panel span-6">
           <h2>Lease Envelope</h2>
-          <p><strong>Lease ID:</strong> <span class="mono">lease_a65108f6-666c-4cc5-8be3-99007b6afada</span></p>
-          <p><strong>Wallet:</strong> <span class="mono">0xdbc8e35ea466f85d57c0cc1517a81199b8549f04</span></p>
-          <p><strong>Assets:</strong> USDT0, USDC, OKB</p>
-          <p><strong>Protocols:</strong> okx-aggregator, quickswap</p>
-          <p><strong>Budget:</strong> $3 per tx / $15 per day</p>
-          <p><strong>Expires:</strong> 2026-04-15T12:15:27.000Z</p>
+          <p><strong>Lease ID:</strong> <span class="mono">lease_ec5391c6-4cf5-4032-a926-0c7905fb3fc5</span></p>
+          <p><strong>Wallet:</strong> <span class="mono">0x3f665386b41Fa15c5ccCeE983050a236E6a10108</span></p>
+          <p><strong>Assets:</strong> USDT</p>
+          <p><strong>Protocols:</strong> x402, mcp</p>
+          <p><strong>Budget:</strong> $5 per tx / $20 per day</p>
+          <p><strong>Expires:</strong> 2026-05-16T05:45:58.000Z</p>
         </article>
 
         <article class="panel span-6">
           <h2>How Judges Should Read It</h2>
           <ul>
             <li><strong>OnchainOS path:</strong> wallet, quote, trade, and receipt flow are in the main path.</li>
-            <li><strong>X Layer fit:</strong> the lease specifically scopes X Layer routes and produces X Layer receipts.</li>
+            <li><strong>Network fit:</strong> the rule scopes live onchain execution and produces verifiable receipts.</li>
             <li><strong>Human interaction:</strong> humans issue, pause, review, and revoke authority without giving full wallet access.</li>
             <li><strong>Completeness:</strong> lease file, request, decision, receipt, proof dashboard, and submission site all exist.</li>
           </ul>
@@ -106,45 +106,59 @@
             <thead><tr><th>Generated</th><th>Outcome</th><th>Tx</th><th>Summary</th></tr></thead>
             <tbody>
         <tr>
-          <td>2026-04-14T12:16:51.778Z</td>
+          <td>2026-05-15T05:46:35.631Z</td>
           <td>block</td>
           <td class="mono">none</td>
-          <td>product=xlayer-trust-leases | operator=active | lease=lease_a65108f6-666c-4cc5-8be3-99007b6afada | consumer=strategy-office | outcome=block | zone=yellow | notional=0 | spent24h=0.00 | tx=none</td>
+          <td>product=boundless | operator=active | lease=lease_ec5391c6-4cf5-4032-a926-0c7905fb3fc5 | consumer=bound-agent | outcome=block | zone=yellow | notional=0 | spent24h=0.00 | tx=none</td>
         </tr>
       
         <tr>
-          <td>2026-04-14T12:15:57.627Z</td>
+          <td>2026-05-15T04:57:37.161Z</td>
           <td>approve</td>
-          <td class="mono">0xd956b78edeff2f815f50cc337dff1715f32026d42802518036701cee1212fece</td>
-          <td>product=xlayer-trust-leases | operator=active | lease=lease_a65108f6-666c-4cc5-8be3-99007b6afada | consumer=strategy-office | outcome=approve | zone=green | notional=3 | spent24h=0.00 | tx=0xd956b78edeff2f815f50cc337dff1715f32026d42802518036701cee1212fece</td>
+          <td class="mono">none</td>
+          <td>product=boundless | operator=active | lease=lease_7c079927-093d-411e-8e1e-7b807cea9190 | consumer=bound-agent | outcome=approve | zone=green | notional=1 | tx=none</td>
         </tr>
       
         <tr>
-          <td>2026-04-14T12:04:43.864Z</td>
+          <td>2026-05-15T04:53:55.597Z</td>
+          <td>approve</td>
+          <td class="mono">none</td>
+          <td>product=boundless | operator=active | lease=lease_7c079927-093d-411e-8e1e-7b807cea9190 | consumer=bound-agent | outcome=approve | zone=green | notional=1 | tx=none</td>
+        </tr>
+      
+        <tr>
+          <td>2026-05-15T04:52:40.669Z</td>
+          <td>approve</td>
+          <td class="mono">none</td>
+          <td>product=boundless | operator=active | lease=lease_7c079927-093d-411e-8e1e-7b807cea9190 | consumer=bound-agent | outcome=approve | zone=green | notional=1 | tx=none</td>
+        </tr>
+      
+        <tr>
+          <td>2026-05-12T05:59:52.486Z</td>
           <td>block</td>
           <td class="mono">none</td>
-          <td>product=xlayer-trust-leases | operator=active | lease=lease_7997019c-c5b8-4b8a-9104-589ba18ca3ae | consumer=strategy-office | outcome=block | zone=red | notional=0 | spent24h=0.00 | tx=none</td>
+          <td>product=boundless | operator=active | lease=lease_6f46af8a-0324-4d31-8e99-605823faeef7 | consumer=bound-agent | outcome=block | zone=red | notional=0 | tx=none</td>
         </tr>
       
         <tr>
-          <td>2026-04-12T06:36:44.916Z</td>
-          <td>resize</td>
-          <td class="mono">0x5289c0f232e55e9d053ffee4d2e3269e2e2833c3cea41beff9c0ea476bd2d9f3</td>
-          <td>product=xlayer-trust-leases | operator=active | lease=lease_7997019c-c5b8-4b8a-9104-589ba18ca3ae | consumer=strategy-office | outcome=resize | zone=yellow | notional=3 | spent24h=6.00 | tx=0x5289c0f232e55e9d053ffee4d2e3269e2e2833c3cea41beff9c0ea476bd2d9f3</td>
-        </tr>
-      
-        <tr>
-          <td>2026-04-12T06:35:59.872Z</td>
+          <td>2026-05-12T05:58:05.079Z</td>
           <td>block</td>
           <td class="mono">none</td>
-          <td>product=xlayer-trust-leases | operator=active | lease=lease_7997019c-c5b8-4b8a-9104-589ba18ca3ae | consumer=strategy-office | outcome=block | zone=yellow | notional=0 | spent24h=3.00 | tx=none</td>
+          <td>product=boundless | operator=active | lease=lease_6f46af8a-0324-4d31-8e99-605823faeef7 | consumer=bound-agent | outcome=block | zone=red | notional=0 | tx=none</td>
         </tr>
       
         <tr>
-          <td>2026-04-12T06:35:00.460Z</td>
-          <td>resize</td>
-          <td class="mono">0xf66a7283143e1a29dde4d90058ccebce1e5cb6e3b00ab3f400bd90e6835bdd7f</td>
-          <td>product=xlayer-trust-leases | operator=active | lease=lease_7997019c-c5b8-4b8a-9104-589ba18ca3ae | consumer=strategy-office | outcome=resize | zone=yellow | notional=3 | spent24h=0.00 | tx=0xf66a7283143e1a29dde4d90058ccebce1e5cb6e3b00ab3f400bd90e6835bdd7f</td>
+          <td>2026-04-29T10:27:25.652Z</td>
+          <td>block</td>
+          <td class="mono">none</td>
+          <td>product=boundless | operator=active | lease=lease_6f46af8a-0324-4d31-8e99-605823faeef7 | consumer=bound-agent | outcome=block | zone=yellow | notional=0 | spent24h=0.00 | tx=none</td>
+        </tr>
+      
+        <tr>
+          <td>2026-04-29T07:33:19.477Z</td>
+          <td>block</td>
+          <td class="mono">none</td>
+          <td>product=boundless | operator=active | lease=lease_6c63390e-106a-4238-b56a-48467c8a74ab | consumer=bound-agent | outcome=block | zone=yellow | notional=0 | spent24h=0.00 | tx=none</td>
         </tr>
       </tbody>
           </table>

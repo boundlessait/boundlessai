@@ -1,29 +1,28 @@
 {
-  "generatedAt": "2026-04-12T06:36:44.916Z",
-  "product": "xlayer-trust-leases",
+  "generatedAt": "2026-05-15T05:46:35.631Z",
+  "product": "boundless",
   "operator": {
     "operatorName": "human-principal",
     "mode": "active",
-    "lastCommand": "initialize",
-    "updatedAt": "2026-04-12T06:36:41.127Z"
+    "lastCommand": "resume",
+    "note": "0xaa28aa10f17f12322e625c9a9569efd9a20e2ddb271be3240b409af76908f22b",
+    "updatedAt": "2026-04-29T07:45:08.000Z"
   },
   "lease": {
-    "leaseId": "lease_7997019c-c5b8-4b8a-9104-589ba18ca3ae",
-    "issuedAt": "2026-04-12T06:34:43.858Z",
-    "expiresAt": "2026-04-13T06:34:43.859Z",
+    "leaseId": "lease_ec5391c6-4cf5-4032-a926-0c7905fb3fc5",
+    "issuedAt": "2026-05-15T05:46:04.000Z",
+    "expiresAt": "2026-05-16T05:45:58.000Z",
     "status": "active",
     "ownerLabel": "human-principal",
-    "consumerName": "strategy-office",
-    "walletAddress": "0xdbc8e35ea466f85d57c0cc1517a81199b8549f04",
-    "baseAsset": "USDT0",
+    "consumerName": "bound-agent",
+    "walletAddress": "0x3f665386b41Fa15c5ccCeE983050a236E6a10108",
+    "baseAsset": "USDT",
     "allowedAssets": [
-      "USDT0",
-      "USDC",
-      "OKB"
+      "USDT"
     ],
     "allowedProtocols": [
-      "okx-aggregator",
-      "quickswap"
+      "x402",
+      "mcp"
     ],
     "allowedActions": [
       "buy",
@@ -31,11 +30,11 @@
       "rebalance"
     ],
     "counterpartyAllowlist": [
-      "okx-aggregator",
-      "quickswap"
+      "x402",
+      "mcp"
     ],
-    "perTxUsd": 3,
-    "dailyBudgetUsd": 15,
+    "perTxUsd": 5,
+    "dailyBudgetUsd": 20,
     "trustRequirements": {
       "reasonRequired": true,
       "proofRequired": true,
@@ -43,49 +42,44 @@
       "degradedRequiresReview": true
     },
     "notes": [
-      "Bounded execution lease for strategy-office treasury actions on X Layer."
+      "Boundless policy for Passport-governed agent payments."
     ]
   },
   "treasury": {
-    "timestamp": "2026-04-12T06:36:43.581Z",
-    "network": "xlayer-mainnet",
-    "chainId": 196,
-    "baseAsset": "USDT0",
-    "totalUsd": 16.94,
-    "liquidUsd": 16.94257163,
+    "timestamp": "2026-05-15T05:46:35.394Z",
+    "network": "kite-testnet",
+    "chainId": 2368,
+    "baseAsset": "USDT",
+    "totalUsd": 0,
+    "liquidUsd": 0,
     "capitalAtRiskUsd": 0,
     "balances": [
       {
-        "symbol": "USDT0",
-        "amount": 10.050562,
-        "usdValue": 10.05347666
+        "symbol": "KITE",
+        "amount": 0.49999183594598073,
+        "usdValue": 0
       },
       {
-        "symbol": "OKB",
-        "amount": 0.04527730451520656,
-        "usdValue": 3.78789929
-      },
-      {
-        "symbol": "USDC",
-        "amount": 3.101754,
-        "usdValue": 3.10119568
+        "symbol": "USDT",
+        "amount": 0,
+        "usdValue": 0
       }
     ]
   },
   "request": {
-    "requestId": "req_5bac55c7-66d0-4063-abba-5d7244cfd078",
-    "createdAt": "2026-04-12T06:36:43.593Z",
-    "sourceProject": "strategy-office",
-    "consumerName": "strategy-office",
-    "leaseId": "lease_7997019c-c5b8-4b8a-9104-589ba18ca3ae",
+    "requestId": "req_4c1c4db2-5a61-43a9-a7e0-9d8f784cf0ba",
+    "createdAt": "2026-05-15T05:46:35.395Z",
+    "sourceProject": "bound-agent",
+    "consumerName": "bound-agent",
+    "leaseId": "lease_ec5391c6-4cf5-4032-a926-0c7905fb3fc5",
     "action": "rebalance",
-    "assetPair": "USDC/USDT0",
-    "fromToken": "USDT0",
-    "toToken": "USDC",
-    "venueHint": "okx-aggregator",
-    "counterparty": "okx-aggregator",
-    "notionalUsd": 3.67,
-    "reason": "USDC is underweight and USDT0 is overweight relative to the office target allocation."
+    "assetPair": "USDT/USDT",
+    "fromToken": "USDT",
+    "toToken": "USDT",
+    "venueHint": "x402",
+    "counterparty": "x402",
+    "notionalUsd": 0,
+    "reason": "No delegated payment request exceeded the minimum policy threshold for this Passport session."
   },
   "checks": [
     {
@@ -104,13 +98,13 @@
       "id": "lease_expiry",
       "label": "Lease expiry",
       "ok": true,
-      "note": "expiresAt=2026-04-13T06:34:43.859Z"
+      "note": "expiresAt=2026-05-16T05:45:58.000Z"
     },
     {
       "id": "wallet_scope",
       "label": "Wallet scope",
       "ok": true,
-      "note": "wallet=0xdbc8e35ea466f85d57c0cc1517a81199b8549f04"
+      "note": "wallet=0x3f665386b41Fa15c5ccCeE983050a236E6a10108"
     },
     {
       "id": "reason_required",
@@ -128,43 +122,43 @@
       "id": "asset_allowed",
       "label": "Asset allowlist",
       "ok": true,
-      "note": "USDT0->USDC"
+      "note": "USDT->USDT"
     },
     {
       "id": "protocol_allowed",
       "label": "Protocol allowlist",
       "ok": true,
-      "note": "venue=okx-aggregator"
+      "note": "venue=x402"
     },
     {
       "id": "counterparty_allowed",
       "label": "Counterparty allowlist",
       "ok": true,
-      "note": "counterparty=okx-aggregator"
+      "note": "counterparty=x402"
     },
     {
       "id": "per_tx_limit",
       "label": "Per-tx budget",
-      "ok": false,
-      "note": "request=$3.67 / limit=$3"
+      "ok": true,
+      "note": "request=$0 / limit=$5"
     },
     {
       "id": "daily_budget",
       "label": "Daily budget",
       "ok": true,
-      "note": "remaining=$12.00"
+      "note": "remaining=$20.00"
     },
     {
       "id": "route_available",
       "label": "Route available",
-      "ok": true,
-      "note": "route ready"
+      "ok": false,
+      "note": "quote failed"
     },
     {
       "id": "price_impact",
       "label": "Price impact",
       "ok": true,
-      "note": "impact=-0.02% / max=2%"
+      "note": "impact=0.00% / max=2%"
     },
     {
       "id": "token_safety",
@@ -174,37 +168,33 @@
     }
   ],
   "usage": {
-    "startedAt": "2026-04-11T06:37:00.189Z",
-    "spent24hUsd": 6,
-    "remainingDailyUsd": 9,
-    "receiptCount24h": 3
+    "startedAt": "2026-05-15T05:46:04.000Z",
+    "spent24hUsd": 0,
+    "remainingDailyUsd": 20,
+    "receiptCount24h": 0
   },
   "decision": {
-    "outcome": "resize",
+    "outcome": "block",
     "trustZone": "yellow",
-    "finalNotionalUsd": 3,
+    "finalNotionalUsd": 0,
     "policyHits": [
-      "budget_resize"
+      "no_trade_candidate"
     ],
-    "rationale": "Lease allowed the request but reduced size to stay inside budget and route quality limits."
+    "rationale": "No delegated payment request met the active Boundless policy in this Passport session."
   },
   "execution": {
-    "status": "broadcasted",
-    "network": "xlayer-mainnet",
-    "chainId": 196,
-    "txHash": "0x5289c0f232e55e9d053ffee4d2e3269e2e2833c3cea41beff9c0ea476bd2d9f3",
-    "explorerUrl": "https://www.oklink.com/xlayer/tx/0x5289c0f232e55e9d053ffee4d2e3269e2e2833c3cea41beff9c0ea476bd2d9f3",
-    "note": "Executed USDT0 -> USDC via CurveNG -> OkieStableSwap."
+    "status": "blocked",
+    "network": "kite-testnet",
+    "chainId": 2368,
+    "note": "No delegated payment request met the active Boundless policy in this Passport session."
   },
   "receipt": {
-    "generatedAt": "2026-04-12T06:36:44.916Z",
-    "leaseId": "lease_7997019c-c5b8-4b8a-9104-589ba18ca3ae",
-    "requestId": "req_5bac55c7-66d0-4063-abba-5d7244cfd078",
-    "consumerName": "strategy-office",
-    "status": "broadcasted",
-    "spentUsd": 3,
-    "txHash": "0x5289c0f232e55e9d053ffee4d2e3269e2e2833c3cea41beff9c0ea476bd2d9f3",
-    "explorerUrl": "https://www.oklink.com/xlayer/tx/0x5289c0f232e55e9d053ffee4d2e3269e2e2833c3cea41beff9c0ea476bd2d9f3",
-    "note": "Executed USDT0 -> USDC via CurveNG -> OkieStableSwap."
+    "generatedAt": "2026-05-15T05:46:35.631Z",
+    "leaseId": "lease_ec5391c6-4cf5-4032-a926-0c7905fb3fc5",
+    "requestId": "req_4c1c4db2-5a61-43a9-a7e0-9d8f784cf0ba",
+    "consumerName": "bound-agent",
+    "status": "blocked",
+    "spentUsd": 0,
+    "note": "No delegated payment request met the active Boundless policy in this Passport session."
   }
 }

@@ -2,6 +2,7 @@ import { createPublicClient, erc20Abi, formatEther, formatUnits, http } from "vi
 import { privateKeyToAccount } from "viem/accounts";
 import { RuntimeEnv } from "../config/env.js";
 import { TreasurySnapshot } from "../core/types.js";
+import { networkLabelFromChainId } from "../../lib/chain-config.js";
 
 function normalizePrivateKey(privateKey?: string): `0x${string}` | undefined {
   if (!privateKey) {
@@ -12,7 +13,7 @@ function normalizePrivateKey(privateKey?: string): `0x${string}` | undefined {
 }
 
 function inferStableUsdValue(symbol: string, amount: number): number {
-  return ["USDT0", "USDT", "USDC"].includes(symbol.toUpperCase()) ? amount : 0;
+  return ["USDT", "USDC"].includes(symbol.toUpperCase()) ? amount : 0;
 }
 
 export function getSettlementAccountAddress(env: RuntimeEnv): string | undefined {
@@ -45,7 +46,7 @@ export async function runTreasuryPreflight(env: RuntimeEnv): Promise<{
       address: treasuryAddress as `0x${string}`
     });
     const nativeAmount = Number(formatEther(nativeBalance));
-    balances.push({ symbol: "OKB", amount: nativeAmount, usdValue: 0 });
+    balances.push({ symbol: "KITE", amount: nativeAmount, usdValue: 0 });
   }
 
   if (treasuryAddress && env.XLAYER_SETTLEMENT_TOKEN_ADDRESS) {
@@ -69,7 +70,7 @@ export async function runTreasuryPreflight(env: RuntimeEnv): Promise<{
 export function buildSampleTreasurySnapshot(env: RuntimeEnv): TreasurySnapshot {
   return {
     timestamp: new Date().toISOString(),
-    network: env.XLAYER_CHAIN_ID === 196 ? "xlayer-mainnet" : "xlayer-custom",
+    network: networkLabelFromChainId(env.XLAYER_CHAIN_ID),
     chainId: env.XLAYER_CHAIN_ID,
     baseAsset: env.LEASE_DEFAULT_BASE_ASSET,
     totalUsd: 18270,
@@ -77,8 +78,8 @@ export function buildSampleTreasurySnapshot(env: RuntimeEnv): TreasurySnapshot {
     capitalAtRiskUsd: 2200,
     balances: [
       { symbol: env.LEASE_DEFAULT_BASE_ASSET, amount: 12480, usdValue: 12480 },
-      { symbol: "USDC", amount: 3920, usdValue: 3920 },
-      { symbol: "OKB", amount: 26, usdValue: 1870 }
+      { symbol: "USDT", amount: 3920, usdValue: 3920 },
+      { symbol: "KITE", amount: 26, usdValue: 1870 }
     ]
   };
 }
@@ -89,7 +90,7 @@ export async function buildLiveTreasurySnapshot(env: RuntimeEnv): Promise<Treasu
 
   return {
     timestamp: new Date().toISOString(),
-    network: preflight.chainId === 196 ? "xlayer-mainnet" : "xlayer-custom",
+    network: networkLabelFromChainId(preflight.chainId),
     chainId: preflight.chainId,
     baseAsset: env.LEASE_DEFAULT_BASE_ASSET,
     totalUsd: stableUsd,

@@ -17,7 +17,7 @@
 
 ## Internal donor projects
 
-- xlayer-strategy-office
-  - OnchainOS CLI and X Layer execution path reuse
+- xlayer-bound-agent
+  - execution runtime CLI and onchain execution path reuse
 - xlayer-agent-control-tower
   - operator posture, proof-first submission framing

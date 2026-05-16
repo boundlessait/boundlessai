@@ -80,6 +80,9 @@ export interface LeaseCheck {
     | "counterparty_allowed"
     | "per_tx_limit"
     | "daily_budget"
+    | "passport_session"
+    | "session_expiry"
+    | "session_budget"
     | "route_available"
     | "price_impact"
     | "token_safety";
@@ -104,7 +107,7 @@ export interface LeaseDecision {
 }
 
 export interface ExecutionIntent {
-  network: "xlayer-mainnet" | "xlayer-testnet" | "xlayer-custom";
+  network: "kite-mainnet" | "kite-testnet" | "kite-custom";
   chainId: number;
   venueHint: string;
   assetPair: string;
@@ -137,9 +140,37 @@ export interface ProofPacket {
   generatedAt: string;
   product: string;
   operator: OperatorState;
+  passportSession?: {
+    sessionId: string;
+    payerAddress: string;
+    agentName?: string;
+    agentId?: string;
+    network: "kite-mainnet" | "kite-testnet";
+    createdAt?: string;
+    expiresAt: string;
+    dailyBudgetUsd: number;
+    spentUsd: number;
+    remainingBudgetUsd: number;
+    portalUrl?: string;
+    notes?: string;
+  };
   lease: LeasePolicy;
   treasury: TreasurySnapshot;
   request: LeaseRequest;
+  paymentAttempt?: {
+    serviceUrl: string;
+    serviceHost: string;
+    resource: string;
+    httpMethod: string;
+    httpStatus: number;
+    merchantName?: string;
+    network?: string;
+    asset?: string;
+    maxAmountRequired?: string;
+    xPaymentPresent: boolean;
+    challengeSummary?: string;
+    responsePreview?: string;
+  };
   checks: LeaseCheck[];
   usage: LeaseUsageWindow;
   decision: LeaseDecision;

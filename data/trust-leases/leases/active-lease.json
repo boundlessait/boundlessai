@@ -1,20 +1,18 @@
 {
-  "leaseId": "lease_a65108f6-666c-4cc5-8be3-99007b6afada",
-  "issuedAt": "2026-04-14T12:15:26.991Z",
-  "expiresAt": "2026-04-15T12:15:27.000Z",
+  "leaseId": "lease_ec5391c6-4cf5-4032-a926-0c7905fb3fc5",
+  "issuedAt": "2026-05-15T05:46:04.000Z",
+  "expiresAt": "2026-05-16T05:45:58.000Z",
   "status": "active",
   "ownerLabel": "human-principal",
-  "consumerName": "strategy-office",
-  "walletAddress": "0xdbc8e35ea466f85d57c0cc1517a81199b8549f04",
-  "baseAsset": "USDT0",
+  "consumerName": "bound-agent",
+  "walletAddress": "0x3f665386b41Fa15c5ccCeE983050a236E6a10108",
+  "baseAsset": "USDT",
   "allowedAssets": [
-    "USDT0",
-    "USDC",
-    "OKB"
+    "USDT"
   ],
   "allowedProtocols": [
-    "okx-aggregator",
-    "quickswap"
+    "x402",
+    "mcp"
   ],
   "allowedActions": [
     "buy",
@@ -22,11 +20,11 @@
     "rebalance"
   ],
   "counterpartyAllowlist": [
-    "okx-aggregator",
-    "quickswap"
+    "x402",
+    "mcp"
   ],
-  "perTxUsd": 3,
-  "dailyBudgetUsd": 15,
+  "perTxUsd": 5,
+  "dailyBudgetUsd": 20,
   "trustRequirements": {
     "reasonRequired": true,
     "proofRequired": true,
@@ -34,6 +32,6 @@
     "degradedRequiresReview": true
   },
   "notes": [
-    "Bounded execution lease for strategy-office treasury actions on X Layer."
+    "Boundless policy for Passport-governed agent payments."
   ]
 }

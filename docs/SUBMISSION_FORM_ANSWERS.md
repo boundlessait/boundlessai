@@ -1,50 +1,108 @@
-# Submission Form Answers
+# Boundless Submission Form Answers
 
-## Project Name & One-Line Description
+## Project Name
 
-X Layer Trust Leases — A pre-execution lease layer for X Layer agents that bounds wallet scope, budget, protocol, counterparty, and expiry before autonomous execution is allowed.
+Boundless
 
-## Project Highlights
+## One-Line Description
 
-X Layer Trust Leases is not another trading bot. It is a human-track primitive for bounded agent authority.
+Boundless is the control layer between Kite Passport delegation and real-money execution: policy first, agent runs second, proof always.
 
-A human issues a lease. The lease defines wallet scope, allowed assets, allowed protocols, allowed counterparties, per-tx limits, daily budget, and expiry. The agent submits a request against that lease. Only requests that stay inside the lease envelope can execute.
+## Detailed Explanation
 
-The project now wires the trust lease directly into the live `xlayer-strategy-office` round path. A strategy-office round reads the trust lease before it can broadcast, and the same round writes explicit trust-lease receipts plus a judge-facing proof dashboard and submission page. The web app now also exposes an in-app Operator Console for issue, pause, review, resume, revoke, run, and proof refresh actions, so the governance loop is operable inside the product instead of being trapped in CLI-only demos.
+Boundless exists for one specific gap in the agent stack.
 
-The project also now includes a dedicated X Layer controller contract. In contract-driven mode, lease state, operator posture, and the latest receipt anchor are mirrored onchain, while the dashboard reads that controller state back into the live UI. That means the product is no longer only a local proof generator; it can operate as a hybrid web app with X Layer as the state authority for the core governance primitive.
+Kite Passport gives an agent delegated payment permission and session scope. That solves identity and authorization. It does not fully answer whether a specific request should continue under the current budget, venue, operator posture, and proof requirements.
 
-## Your Track
+Boundless adds that missing runtime governance layer.
 
-X Layer Arena
+The product flow is:
 
-## Team Members & Contact Information
+1. A human defines a policy envelope in `/submission`
+   - governed wallet
+   - per-transaction limit
+   - daily budget
+   - allowed assets
+   - allowed protocols
+   - operator mode
+   - expiry
 
-Richard — builder — ritsuyan4763@gmail.com
+2. In `/member-test`, the user mirrors the active Kite Passport session boundary
+   - session id
+   - payer
+   - budget
+   - expiry
 
-## Agentic Wallet Address
+3. Boundless runs the request through local policy checks before the payment continues
+   - lease status
+   - lease expiry
+   - wallet scope
+   - reason required
+   - action allowlist
+   - asset allowlist
+   - protocol allowlist
+   - counterparty allowlist
+   - per-tx budget
+   - daily budget
 
-0xdbc8e35ea466f85d57c0cc1517a81199b8549f04
+4. If the request is inside policy, the paid path can continue. If it is outside policy, the request is blocked before settlement.
 
-## GitHub Repository Link
+5. `/proof` shows the full chain in one place
+   - session boundary
+   - request
+   - decision
+   - payment result
+   - receipt / proof
 
-https://github.com/richard7463/xlayer-trust-leases
+What we built in this submission:
 
-## OnchainOS Usage
+- a deployed Boundless web app with three surfaces:
+  - `/submission`
+  - `/member-test`
+  - `/proof`
+- wallet-signed policy actions for the operator surface
+- persisted Kite Passport session boundary handling
+- local policy enforcement before x402 execution continues
+- proof packet generation for both allowed and blocked outcomes
+- a judge-ready presentation deck and updated submission assets
 
-This project uses the same OnchainOS-backed X Layer execution path already proven in local live projects in this workspace.
+What is important technically is that Boundless does not pretend to replace Kite Passport. It is layered above Passport.
 
-- OnchainOS wallet balance lookup for treasury state
-- OnchainOS swap quote for route viability
-- OnchainOS swap execute for live X Layer execution when the lease approves the request
-- X Layer tx hash and explorer-linked receipt as proof output
+Kite Passport handles delegated payment permission.
+Boundless decides the exact rules under which that payment is allowed.
 
-The lease is the pre-execution gate sitting above that path, and the latest runtime proof shows that an expired lease now blocks strategy-office execution before broadcast.
+That is why the project fits agentic trading and portfolio management: it is the missing control layer before autonomous financial actions execute.
 
-## Demo Video Link
+## Repository Link
 
-Fill after upload.
+https://github.com/boundlessait/boundlessai
 
-## X Post Link
+## Live Demo
 
-Fill after posting.
+https://unboundai.xyz
+
+## Key Routes
+
+- https://unboundai.xyz/submission
+- https://unboundai.xyz/member-test
+- https://unboundai.xyz/proof
+
+## Presentation Deck
+
+`deliverables/boundless-kite-hackathon-deck.pptx`
+
+## Demo Video
+
+Add your uploaded public video URL here before submitting the form.
+
+## Track Fit
+
+Boundless is a runtime governance layer for agentic finance. It sits directly before autonomous trading or payment execution and turns broad delegated authority into bounded, reviewable, and provable execution rules.
+
+## Repo Proof Pointers
+
+- Judge README: `README.md`
+- Proof packet: `examples/live-proof-latest.json`
+- Architecture notes: `docs/ARCHITECTURE.md`
+- Demo script: `docs/DEMO_VIDEO_SCRIPT.md`
+- Deck: `deliverables/boundless-kite-hackathon-deck.pptx`

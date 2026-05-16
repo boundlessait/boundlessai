@@ -1,7 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type { ProofPacket, RoundArtifactIndexEntry } from './types';
+import { networkLabelFromChainId } from './chain-config';
 import { canWriteController, readControllerConfig, readOnchainActiveLease, readOnchainLatestReceipt, readOnchainOperator, readRecentOnchainReceipts, type OnchainReceiptEvent } from './trust-lease-controller';
+import { resolveProjectRoot } from './project-root';
 import { loadLocalEnvFiles, parseCsvList, readRuntimeEnv } from '../src/config/env';
 
 export type SiteData = {
@@ -15,9 +17,13 @@ export type SiteData = {
   latestBlockedPacket: ProofPacket | null;
   controller: {
     address: string | null;
+    vaultAddress: string | null;
     source: 'local' | 'onchain';
     latestRequestId: string | null;
     latestTxHash: string | null;
+    consumerName: string | null;
+    operatorName: string | null;
+    chainId: number;
     actionsEnabled: boolean;
     runRoundEnabled: boolean;
     note: string | null;
@@ -29,7 +35,7 @@ type SiteDataOptions = {
 };
 
 function getDataPath(...segments: string[]): string {
-  return path.join(process.cwd(), 'data', 'trust-leases', ...segments);
+  return path.join(resolveProjectRoot(), 'data', 'trust-leases', ...segments);
 }
 
 function readJsonIfExists<T>(filePath: string): T | null {
@@ -149,7 +155,7 @@ function buildSyntheticRoundFromReceipt(receipt: OnchainReceiptEvent): RoundArti
     requestId: receipt.requestId,
     outcome: receipt.outcome,
     txHash: receipt.txHashHex,
-    summary: `onchain receipt | lease=${receipt.leaseId} | outcome=${receipt.outcome} | execution=${receipt.executionStatus} | tx=${receipt.txHashHex ?? 'none'}`,
+    summary: `product=boundless | source=kite-controller | lease=${receipt.leaseId} | outcome=${receipt.outcome} | execution=${receipt.executionStatus} | tx=${receipt.txHashHex ?? 'none'}`,
     relativePath: '',
   };
 }
@@ -179,7 +185,7 @@ function buildSyntheticPacketFromOnchain(input: {
     },
     treasury: {
       timestamp: input.receipt.timestamp ?? new Date().toISOString(),
-      network: input.env.XLAYER_CHAIN_ID === 196 ? 'xlayer-mainnet' : 'xlayer-custom',
+      network: networkLabelFromChainId(input.env.XLAYER_CHAIN_ID),
       chainId: input.env.XLAYER_CHAIN_ID,
       baseAsset: input.lease.baseAsset,
       totalUsd: input.lease.dailyBudgetUsd,
@@ -197,17 +203,17 @@ function buildSyntheticPacketFromOnchain(input: {
       assetPair: `${input.lease.baseAsset}/managed`,
       fromToken: input.lease.baseAsset,
       toToken: txHash ? 'executed' : 'blocked',
-      venueHint: 'controller-anchored',
-      counterparty: 'controller-anchored',
+      venueHint: 'kite-passport',
+      counterparty: 'kite-controller',
       notionalUsd: input.receipt.spentUsd,
-      reason: 'Recovered from controller-backed receipt anchor when no local artifact was available.',
+      reason: 'Recovered from a Kite controller receipt anchor when no local proof artifact was available.',
     },
     checks: [
       {
         id: 'operator_mode',
-        label: 'Controller-backed proof',
+        label: 'Kite controller proof',
         ok: true,
-        note: 'Recovered from X Layer controller state and receipt anchors.',
+        note: 'Recovered from Kite controller state and receipt anchors.',
       },
     ],
     usage: {
@@ -222,18 +228,18 @@ function buildSyntheticPacketFromOnchain(input: {
       finalNotionalUsd: input.receipt.spentUsd,
       policyHits: ['controller_anchor'],
       rationale: txHash
-        ? 'Recovered from a controller-anchored execution receipt on X Layer.'
-        : 'Recovered from a controller-anchored blocked or simulated receipt on X Layer.',
+        ? 'Recovered from a Kite controller-anchored execution receipt.'
+        : 'Recovered from a Kite controller-anchored blocked payment check.',
     },
     execution: {
       status: input.receipt.executionStatus,
-      network: input.env.XLAYER_CHAIN_ID === 196 ? 'xlayer-mainnet' : 'xlayer-custom',
+      network: networkLabelFromChainId(input.env.XLAYER_CHAIN_ID),
       chainId: input.env.XLAYER_CHAIN_ID,
       txHash,
       explorerUrl: txHash ? `${input.env.XLAYER_EXPLORER_BASE_URL.replace(/\/+$/, '')}/tx/${txHash}` : undefined,
       note: txHash
-        ? 'Execution reconstructed from X Layer controller receipt anchor.'
-        : 'Execution state reconstructed from X Layer controller receipt anchor.',
+        ? 'Execution reconstructed from Kite controller receipt anchor.'
+        : 'Execution state reconstructed from Kite controller receipt anchor.',
     },
     receipt: {
       generatedAt: input.receipt.timestamp ?? new Date().toISOString(),
@@ -244,7 +250,7 @@ function buildSyntheticPacketFromOnchain(input: {
       spentUsd: input.receipt.spentUsd,
       txHash,
       explorerUrl: txHash ? `${input.env.XLAYER_EXPLORER_BASE_URL.replace(/\/+$/, '')}/tx/${txHash}` : undefined,
-      note: 'Recovered from controller anchor.',
+      note: 'Recovered from Kite controller anchor.',
     },
   };
 }
@@ -307,7 +313,7 @@ function clonePacket(packet: ProofPacket | null): ProofPacket | null {
 export async function getSiteData(options: SiteDataOptions = {}): Promise<SiteData> {
   const rounds = sortRounds(readJsonIfExists<RoundArtifactIndexEntry[]>(getDataPath('index.json')) ?? []);
   const hostedRuntime = Boolean(process.env.VERCEL || process.env.VERCEL_ENV);
-  const loadedEnv = hostedRuntime ? process.env : loadLocalEnvFiles(process.cwd(), process.env);
+  const loadedEnv = hostedRuntime ? process.env : loadLocalEnvFiles(resolveProjectRoot(), process.env);
   const runtimeEnv = readRuntimeEnv(loadedEnv);
   const controllerConfig = readControllerConfig(loadedEnv);
   const controllerWritable = canWriteController(controllerConfig);
@@ -440,19 +446,23 @@ export async function getSiteData(options: SiteDataOptions = {}): Promise<SiteDa
     latestBlockedPacket,
     controller: {
       address: controllerConfig.controllerAddress ?? null,
+      vaultAddress: runtimeEnv.BOUNDLESS_VAULT_ADDRESS ?? null,
       source: controllerConfig.controllerAddress ? 'onchain' : 'local',
       latestRequestId: onchainReceipt?.requestId ?? null,
       latestTxHash: onchainReceipt?.txHash && onchainReceipt.txHash !== '0x0000000000000000000000000000000000000000000000000000000000000000'
         ? onchainReceipt.txHash
         : null,
+      consumerName: runtimeEnv.LEASE_CONSUMER_NAME,
+      operatorName: runtimeEnv.LEASE_OPERATOR_NAME,
+      chainId: runtimeEnv.XLAYER_CHAIN_ID,
       actionsEnabled: hostedRuntime ? controllerWritable : true,
       runRoundEnabled: !hostedRuntime,
       note: hostedRuntime
         ? controllerReadError
           ? `Controller reads temporarily unavailable. Falling back to bundled proof data. ${controllerReadError}`
           : controllerWritable
-            ? 'Hosted deployment can issue, revoke, and change operator posture directly on X Layer. Live round execution still requires a writable runner.'
-            : 'Hosted deployment is read-only. Control actions require a configured X Layer controller writer or a writable runner.'
+            ? 'Hosted deployment can issue, revoke, and change operator posture directly onchain. Live round execution still requires a writable runner.'
+            : 'Hosted deployment is read-only. Control actions require a configured controller writer or a writable runner.'
         : controllerReadError
           ? `Controller read fallback: ${controllerReadError}`
           : null,
@@ -465,5 +475,8 @@ export function writeCanonicalLatestIfNeeded(packet: ProofPacket): void {
     return;
   }
   const latestPath = getDataPath('live-proof-latest.json');
+  if (fs.existsSync(latestPath)) {
+    return;
+  }
   fs.writeFileSync(latestPath, `${JSON.stringify(packet, null, 2)}\n`);
 }

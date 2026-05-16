@@ -77,10 +77,10 @@ export function buildSubmissionHtml(input: {
   <body>
     <div class="wrap">
       <section class="hero">
-        <div class="eyebrow">X Layer Human Track Submission</div>
+        <div class="eyebrow">Governed Agent Finance Submission</div>
         <h1>${escapeHtml(packet.product)}</h1>
         <p>
-          A human-issued lease defines exactly what an agent can do on X Layer: which wallet, which assets, which protocols,
+          A human-issued rule defines exactly what an agent can do onchain: which wallet, which assets, which protocols,
           how much per tx, how much per day, and when the authority expires. Each round produces a receipt with policy checks,
           the lease decision, and optional onchain proof.
         </p>
@@ -133,7 +133,7 @@ export function buildSubmissionHtml(input: {
           <h2>How Judges Should Read It</h2>
           <ul>
             <li><strong>OnchainOS path:</strong> wallet, quote, trade, and receipt flow are in the main path.</li>
-            <li><strong>X Layer fit:</strong> the lease specifically scopes X Layer routes and produces X Layer receipts.</li>
+            <li><strong>Network fit:</strong> the rule scopes live onchain execution and produces verifiable receipts.</li>
             <li><strong>Human interaction:</strong> humans issue, pause, review, and revoke authority without giving full wallet access.</li>
             <li><strong>Completeness:</strong> lease file, request, decision, receipt, proof dashboard, and submission site all exist.</li>
           </ul>

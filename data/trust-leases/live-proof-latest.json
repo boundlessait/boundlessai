@@ -1,30 +1,28 @@
 {
-  "generatedAt": "2026-04-14T12:16:51.778Z",
-  "product": "xlayer-trust-leases",
+  "generatedAt": "2026-05-15T05:46:35.631Z",
+  "product": "boundless",
   "operator": {
     "operatorName": "human-principal",
     "mode": "active",
     "lastCommand": "resume",
-    "note": "restore active after contract-ready smoke test",
-    "updatedAt": "2026-04-15T02:13:54.892Z"
+    "note": "0xaa28aa10f17f12322e625c9a9569efd9a20e2ddb271be3240b409af76908f22b",
+    "updatedAt": "2026-04-29T07:45:08.000Z"
   },
   "lease": {
-    "leaseId": "lease_a65108f6-666c-4cc5-8be3-99007b6afada",
-    "issuedAt": "2026-04-14T12:15:26.991Z",
-    "expiresAt": "2026-04-15T12:15:27.000Z",
+    "leaseId": "lease_ec5391c6-4cf5-4032-a926-0c7905fb3fc5",
+    "issuedAt": "2026-05-15T05:46:04.000Z",
+    "expiresAt": "2026-05-16T05:45:58.000Z",
     "status": "active",
     "ownerLabel": "human-principal",
-    "consumerName": "strategy-office",
-    "walletAddress": "0xdbc8e35ea466f85d57c0cc1517a81199b8549f04",
-    "baseAsset": "USDT0",
+    "consumerName": "bound-agent",
+    "walletAddress": "0x3f665386b41Fa15c5ccCeE983050a236E6a10108",
+    "baseAsset": "USDT",
     "allowedAssets": [
-      "USDT0",
-      "USDC",
-      "OKB"
+      "USDT"
     ],
     "allowedProtocols": [
-      "okx-aggregator",
-      "quickswap"
+      "x402",
+      "mcp"
     ],
     "allowedActions": [
       "buy",
@@ -32,11 +30,11 @@
       "rebalance"
     ],
     "counterpartyAllowlist": [
-      "okx-aggregator",
-      "quickswap"
+      "x402",
+      "mcp"
     ],
-    "perTxUsd": 3,
-    "dailyBudgetUsd": 15,
+    "perTxUsd": 5,
+    "dailyBudgetUsd": 20,
     "trustRequirements": {
       "reasonRequired": true,
       "proofRequired": true,
@@ -44,49 +42,44 @@
       "degradedRequiresReview": true
     },
     "notes": [
-      "Bounded execution lease for strategy-office treasury actions on X Layer."
+      "Boundless policy for Passport-governed agent payments."
     ]
   },
   "treasury": {
-    "timestamp": "2026-04-14T12:16:51.769Z",
-    "network": "xlayer-mainnet",
-    "chainId": 196,
-    "baseAsset": "USDT0",
-    "totalUsd": 16.89,
-    "liquidUsd": 16.88583346,
+    "timestamp": "2026-05-15T05:46:35.394Z",
+    "network": "kite-testnet",
+    "chainId": 2368,
+    "baseAsset": "USDT",
+    "totalUsd": 0,
+    "liquidUsd": 0,
     "capitalAtRiskUsd": 0,
     "balances": [
       {
-        "symbol": "USDC",
-        "amount": 6.102745,
-        "usdValue": 6.10152445
+        "symbol": "KITE",
+        "amount": 0.49999183594598073,
+        "usdValue": 0
       },
       {
-        "symbol": "OKB",
-        "amount": 0.07140224930861952,
-        "usdValue": 6.08632773
-      },
-      {
-        "symbol": "USDT0",
-        "amount": 4.696901,
-        "usdValue": 4.69798128
+        "symbol": "USDT",
+        "amount": 0,
+        "usdValue": 0
       }
     ]
   },
   "request": {
-    "requestId": "req_px-1776169011772",
-    "createdAt": "2026-04-14T12:16:51.772Z",
-    "sourceProject": "strategy-office",
-    "consumerName": "strategy-office",
-    "leaseId": "lease_a65108f6-666c-4cc5-8be3-99007b6afada",
+    "requestId": "req_4c1c4db2-5a61-43a9-a7e0-9d8f784cf0ba",
+    "createdAt": "2026-05-15T05:46:35.395Z",
+    "sourceProject": "bound-agent",
+    "consumerName": "bound-agent",
+    "leaseId": "lease_ec5391c6-4cf5-4032-a926-0c7905fb3fc5",
     "action": "rebalance",
-    "assetPair": "USDT0/USDC",
-    "fromToken": "USDT0",
-    "toToken": "USDC",
-    "venueHint": "okx-aggregator",
-    "counterparty": "okx-aggregator",
+    "assetPair": "USDT/USDT",
+    "fromToken": "USDT",
+    "toToken": "USDT",
+    "venueHint": "x402",
+    "counterparty": "x402",
     "notionalUsd": 0,
-    "reason": "No material allocation drift exceeded the minimum trade threshold for this strategy-office round."
+    "reason": "No delegated payment request exceeded the minimum policy threshold for this Passport session."
   },
   "checks": [
     {
@@ -105,13 +98,13 @@
       "id": "lease_expiry",
       "label": "Lease expiry",
       "ok": true,
-      "note": "expiresAt=2026-04-15T12:15:27.000Z"
+      "note": "expiresAt=2026-05-16T05:45:58.000Z"
     },
     {
       "id": "wallet_scope",
       "label": "Wallet scope",
       "ok": true,
-      "note": "wallet=0xdbc8e35ea466f85d57c0cc1517a81199b8549f04"
+      "note": "wallet=0x3f665386b41Fa15c5ccCeE983050a236E6a10108"
     },
     {
       "id": "reason_required",
@@ -129,37 +122,37 @@
       "id": "asset_allowed",
       "label": "Asset allowlist",
       "ok": true,
-      "note": "USDT0->USDC"
+      "note": "USDT->USDT"
     },
     {
       "id": "protocol_allowed",
       "label": "Protocol allowlist",
       "ok": true,
-      "note": "venue=okx-aggregator"
+      "note": "venue=x402"
     },
     {
       "id": "counterparty_allowed",
       "label": "Counterparty allowlist",
       "ok": true,
-      "note": "counterparty=okx-aggregator"
+      "note": "counterparty=x402"
     },
     {
       "id": "per_tx_limit",
       "label": "Per-tx budget",
       "ok": true,
-      "note": "request=$0 / limit=$3"
+      "note": "request=$0 / limit=$5"
     },
     {
       "id": "daily_budget",
       "label": "Daily budget",
       "ok": true,
-      "note": "remaining=$15.00"
+      "note": "remaining=$20.00"
     },
     {
       "id": "route_available",
       "label": "Route available",
-      "ok": true,
-      "note": "route ready"
+      "ok": false,
+      "note": "quote failed"
     },
     {
       "id": "price_impact",
@@ -175,10 +168,10 @@
     }
   ],
   "usage": {
-    "startedAt": "2026-04-13T12:16:51.781Z",
+    "startedAt": "2026-05-15T05:46:04.000Z",
     "spent24hUsd": 0,
-    "remainingDailyUsd": 15,
-    "receiptCount24h": 2
+    "remainingDailyUsd": 20,
+    "receiptCount24h": 0
   },
   "decision": {
     "outcome": "block",
@@ -187,21 +180,21 @@
     "policyHits": [
       "no_trade_candidate"
     ],
-    "rationale": "No material allocation drift produced a leaseable strategy-office request in this round."
+    "rationale": "No delegated payment request met the active Boundless policy in this Passport session."
   },
   "execution": {
-    "status": "simulated",
-    "network": "xlayer-mainnet",
-    "chainId": 196,
-    "note": "No rebalance candidate met the minimum threshold for this round."
+    "status": "blocked",
+    "network": "kite-testnet",
+    "chainId": 2368,
+    "note": "No delegated payment request met the active Boundless policy in this Passport session."
   },
   "receipt": {
-    "generatedAt": "2026-04-14T12:16:51.778Z",
-    "leaseId": "lease_a65108f6-666c-4cc5-8be3-99007b6afada",
-    "requestId": "req_px-1776169011772",
-    "consumerName": "strategy-office",
+    "generatedAt": "2026-05-15T05:46:35.631Z",
+    "leaseId": "lease_ec5391c6-4cf5-4032-a926-0c7905fb3fc5",
+    "requestId": "req_4c1c4db2-5a61-43a9-a7e0-9d8f784cf0ba",
+    "consumerName": "bound-agent",
     "status": "blocked",
     "spentUsd": 0,
-    "note": "No rebalance candidate met the minimum threshold for this round."
+    "note": "No delegated payment request met the active Boundless policy in this Passport session."
   }
 }

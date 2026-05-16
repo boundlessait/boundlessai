@@ -2,9 +2,21 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
+import { createPublicClient, createWalletClient, custom, http, isAddress, keccak256, stringToHex, zeroHash, type Address } from 'viem';
+import { boundlessVaultAbi } from '@/lib/boundless-vault-abi';
+import { sanitizeProofText } from '@/lib/format';
+import {
+  KITE_TESTNET_CHAIN_ID,
+  KITE_TESTNET_EXPLORER_BASE_URL,
+  KITE_TESTNET_RPC_URL,
+  kiteChainById,
+} from '@/lib/chain-config';
+import { trustLeaseControllerAbi } from '@/lib/trust-lease-controller-abi';
+import type { EthereumProvider } from '@/types/ethereum-provider';
 
 const CONNECTED_WALLET_STORAGE_KEY = 'trust-leases.connected-wallet';
 const GUIDE_STORAGE_KEY = 'boundless.console.guide-seen';
+const GUIDE_SESSION_DISMISSED_KEY = 'boundless.console.guide-dismissed-session';
 
 type OperatorConsoleProps = {
   leaseId?: string | null;
@@ -23,6 +35,10 @@ type OperatorConsoleProps = {
   actionsEnabled?: boolean;
   runRoundEnabled?: boolean;
   controllerNote?: string | null;
+  vaultAddress?: string | null;
+  consumerName?: string | null;
+  operatorName?: string | null;
+  chainId?: number | null;
 };
 
 type ControlAction =
@@ -47,36 +63,36 @@ const GUIDE_STEPS: GuideStep[] = [
   {
     id: 'wallet',
     targetId: 'governed-wallet',
-    title: 'Set Treasury Wallet',
-    summary: 'Choose the wallet that this rule protects.',
-    detail: 'This should be your treasury vault address or the governed execution wallet.',
+    title: 'Set Governed Wallet',
+    summary: 'Choose the wallet that Boundless policy protects.',
+    detail: 'Passport handles delegated payment permission. This wallet is the treasury or vault that Boundless governs on top of that session.',
   },
   {
     id: 'budget',
     targetId: 'per-tx-usd',
-    title: 'Set Global Budget',
+    title: 'Set Boundless Budget',
     summary: 'Define the max spend per action and per day.',
-    detail: 'Any request above these limits is blocked by onchain checks.',
+    detail: 'Any Passport-backed request above these limits is blocked by Boundless before execution.',
   },
   {
     id: 'member',
     targetId: 'member-wallet',
     title: 'Set Member Budget',
     summary: 'Assign budget per member wallet.',
-    detail: 'Member limits are separate from global limits. Exceeding either side reverts.',
+    detail: 'Member limits are separate from global limits. Exceeding either side reverts before the payment settles.',
   },
   {
     id: 'save-rule',
     targetId: 'action-issue-lease',
-    title: 'Write Rule Onchain',
-    summary: 'Save the current treasury rule to the controller contract.',
-    detail: 'This makes the latest budget and policy active onchain.',
+    title: 'Write Policy Onchain',
+    summary: 'Save the current Boundless policy to the controller contract.',
+    detail: 'This makes the latest budget and operator gate active above the Passport session.',
   },
   {
     id: 'run-round',
     targetId: 'action-run-round',
     title: 'Run And Verify',
-    summary: 'Run a governed round and check if it passes or is blocked.',
+    summary: 'Run a governed payment check and inspect the result.',
     detail: 'Use this to demo success and failure paths with proof.',
   },
 ];
@@ -86,10 +102,10 @@ const ACTION_GROUPS: Array<{
   actions: Array<{ action: ControlAction; label: string; help: string; tone?: 'primary' | 'warn' | 'neutral' }>;
 }> = [
   {
-    label: 'Rule',
+    label: 'Policy',
     actions: [
-      { action: 'issue-lease', label: 'Save Rule', help: 'Write or replace this rule on X Layer with the settings above.', tone: 'primary' },
-      { action: 'revoke-lease', label: 'Disable', help: 'Cancel the current rule immediately.', tone: 'warn' },
+      { action: 'issue-lease', label: 'Save Policy', help: 'Write or replace this Boundless policy onchain with the settings above.', tone: 'primary' },
+      { action: 'revoke-lease', label: 'Disable', help: 'Cancel the current Boundless policy immediately.', tone: 'warn' },
     ],
   },
   {
@@ -103,22 +119,86 @@ const ACTION_GROUPS: Array<{
   {
     label: 'Runtime',
     actions: [
-      { action: 'run-round', label: 'Run Round', help: 'Ask the runner to create the next request.', tone: 'primary' },
+      { action: 'run-round', label: 'Run Payment Check', help: 'Ask the runner to create the next governed request.', tone: 'primary' },
       { action: 'refresh-proof', label: 'Refresh', help: 'Reload lease, receipt, and dashboard proof.', tone: 'neutral' },
     ],
   },
 ];
 
 const ACTION_PENDING_LABEL: Record<ControlAction, string> = {
-  'issue-lease': 'Saving rule…',
-  'revoke-lease': 'Disabling rule…',
+  'issue-lease': 'Saving policy…',
+  'revoke-lease': 'Disabling policy…',
   pause: 'Applying pause mode…',
   review: 'Applying review mode…',
   resume: 'Resuming active mode…',
-  'run-round': 'Running governed round…',
+  'run-round': 'Running governed payment check…',
   'refresh-proof': 'Refreshing proof…',
   'set-member-policy': 'Saving member policy…',
 };
+
+function hashText(value?: string): `0x${string}` {
+  if (!value || value.trim().length === 0) {
+    return zeroHash;
+  }
+  return keccak256(stringToHex(value));
+}
+
+function serializeForHash(input: unknown): string {
+  return JSON.stringify(input, Object.keys(input as Record<string, unknown>).sort());
+}
+
+function policyHashForLease(input: {
+  consumerName: string;
+  walletAddress?: string;
+  baseAsset: string;
+  allowedAssets: string[];
+  allowedProtocols: string[];
+  allowedActions: string[];
+  counterpartyAllowlist: string[];
+  perTxUsd: number;
+  dailyBudgetUsd: number;
+}): `0x${string}` {
+  const policySeed = {
+    consumerName: input.consumerName,
+    walletAddress: input.walletAddress ?? null,
+    baseAsset: input.baseAsset,
+    allowedAssets: input.allowedAssets,
+    allowedProtocols: input.allowedProtocols,
+    allowedActions: input.allowedActions,
+    counterpartyAllowlist: input.counterpartyAllowlist,
+    perTxUsd: input.perTxUsd,
+    dailyBudgetUsd: input.dailyBudgetUsd,
+    trustRequirements: {
+      reasonRequired: true,
+      proofRequired: true,
+      operatorCanPause: true,
+      degradedRequiresReview: true,
+    },
+  };
+  return keccak256(stringToHex(serializeForHash(policySeed)));
+}
+
+function toUsd6(value: number): bigint {
+  return BigInt(Math.max(0, Math.round(value * 1_000_000)));
+}
+
+function statusCode(value: 'revoked'): number {
+  switch (value) {
+    case 'revoked':
+      return 2;
+  }
+}
+
+function operatorModeCode(value: 'active' | 'review' | 'paused'): number {
+  switch (value) {
+    case 'active':
+      return 1;
+    case 'review':
+      return 2;
+    case 'paused':
+      return 3;
+  }
+}
 
 function parseCsvText(value: string): string[] {
   return value
@@ -144,16 +224,20 @@ export function OperatorConsole({
   actionsEnabled = true,
   runRoundEnabled = true,
   controllerNote,
+  vaultAddress,
+  consumerName,
+  operatorName,
+  chainId,
 }: OperatorConsoleProps) {
   const router = useRouter();
   const [note, setNote] = useState('');
   const [walletAddress, setWalletAddress] = useState(governedWallet ?? '');
-  const [baseAssetInput, setBaseAssetInput] = useState((baseAsset ?? 'USDT0').toUpperCase());
+  const [baseAssetInput, setBaseAssetInput] = useState((baseAsset ?? 'USDT').toUpperCase());
   const [perTxUsdInput, setPerTxUsdInput] = useState(String(perTxUsd ?? 3));
   const [dailyBudgetUsdInput, setDailyBudgetUsdInput] = useState(String(dailyBudgetUsd ?? 15));
   const [expiryHoursInput, setExpiryHoursInput] = useState('24');
-  const [allowedAssetsInput, setAllowedAssetsInput] = useState((allowedAssets && allowedAssets.length > 0 ? allowedAssets : ['USDT0', 'USDC', 'OKB']).join(','));
-  const [allowedProtocolsInput, setAllowedProtocolsInput] = useState((allowedProtocols && allowedProtocols.length > 0 ? allowedProtocols : ['okx-aggregator', 'quickswap']).join(','));
+  const [allowedAssetsInput, setAllowedAssetsInput] = useState((allowedAssets && allowedAssets.length > 0 ? allowedAssets : ['USDT']).join(','));
+  const [allowedProtocolsInput, setAllowedProtocolsInput] = useState((allowedProtocols && allowedProtocols.length > 0 ? allowedProtocols : ['x402', 'mcp']).join(','));
   const [memberAddressInput, setMemberAddressInput] = useState('');
   const [memberPerTxInput, setMemberPerTxInput] = useState('1');
   const [memberDailyInput, setMemberDailyInput] = useState('5');
@@ -166,6 +250,7 @@ export function OperatorConsole({
   const [guideStepIndex, setGuideStepIndex] = useState(0);
   const [guideTargetRect, setGuideTargetRect] = useState<DOMRect | null>(null);
   const [guideCardPosition, setGuideCardPosition] = useState<{ top: number; left: number } | null>(null);
+  const [connectedWallet, setConnectedWallet] = useState<string | null>(null);
 
   useEffect(() => {
     if (governedWallet) {
@@ -209,6 +294,9 @@ export function OperatorConsole({
     if (shouldFollowConnectedWallet && cachedWallet) {
       setWalletAddress(cachedWallet);
     }
+    if (cachedWallet) {
+      setConnectedWallet(cachedWallet);
+    }
 
     const handleWalletUpdated = (event: Event) => {
       if (!shouldFollowConnectedWallet) {
@@ -218,6 +306,7 @@ export function OperatorConsole({
       if (!detail?.address) {
         return;
       }
+      setConnectedWallet(detail.address);
       setWalletAddress(detail.address);
     };
 
@@ -226,15 +315,6 @@ export function OperatorConsole({
       window.removeEventListener('trust-leases-wallet-updated', handleWalletUpdated);
     };
   }, [governedWallet]);
-
-  // Guide: show on first load
-  useEffect(() => {
-    const seen = window.localStorage.getItem(GUIDE_STORAGE_KEY);
-    if (!seen) {
-      setGuideStepIndex(0);
-      setGuideOpen(true);
-    }
-  }, []);
 
   // Guide: update highlight position
   useEffect(() => {
@@ -252,8 +332,6 @@ export function OperatorConsole({
         setGuideCardPosition({ top: 96, left: 24 });
         return;
       }
-
-      target.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
       const rect = target.getBoundingClientRect();
       setGuideTargetRect(rect);
 
@@ -271,6 +349,10 @@ export function OperatorConsole({
       setGuideCardPosition({ top: nextTop, left: nextLeft });
     };
 
+    const step = GUIDE_STEPS[guideStepIndex];
+    const target = document.getElementById(step.targetId);
+    target?.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+
     const timer = window.setTimeout(refresh, 120);
     window.addEventListener('resize', refresh);
     window.addEventListener('scroll', refresh, true);
@@ -281,9 +363,28 @@ export function OperatorConsole({
     };
   }, [guideOpen, guideStepIndex]);
 
+  useEffect(() => {
+    if (!guideOpen) {
+      return;
+    }
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        closeGuide(false);
+      } else if (event.key === 'ArrowLeft' && guideStepIndex > 0) {
+        setGuideStepIndex((prev) => Math.max(0, prev - 1));
+      } else if (event.key === 'ArrowRight') {
+        nextGuideStep();
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [guideOpen, guideStepIndex]);
+
   const meta = useMemo(
     () => [
-      `Rule: ${leaseId ? leaseId.slice(0, 8) + '...' : 'none'}`,
+      `Policy: ${leaseId ? leaseId.slice(0, 8) + '...' : 'none'}`,
       `Status: ${leaseStatus ?? 'not issued'}`,
       `Operator: ${operatorMode ?? 'idle'}`,
     ],
@@ -292,14 +393,108 @@ export function OperatorConsole({
 
   const fullMeta = useMemo(
     () => [
-      `Rule: ${leaseId ?? 'none'}`,
+      `Policy: ${leaseId ?? 'none'}`,
       `Status: ${leaseStatus ?? 'not issued'}`,
       `Operator: ${operatorMode ?? 'idle'}`,
-      controllerAddress ? `Controller: ${controllerSource === 'onchain' ? 'X Layer' : 'Local'} ${controllerAddress}` : 'Controller: local runtime',
+      controllerAddress ? `Controller: ${controllerSource === 'onchain' ? 'Onchain' : 'Local'} ${controllerAddress}` : 'Controller: local runtime',
       latestSuccessTxHash ? `Latest success: ${latestSuccessTxHash}` : 'Latest success: none yet',
+      connectedWallet ? `Admin wallet: ${connectedWallet}` : 'Admin wallet: not connected',
     ],
-    [leaseId, leaseStatus, operatorMode, controllerAddress, controllerSource, latestSuccessTxHash],
+    [leaseId, leaseStatus, operatorMode, controllerAddress, controllerSource, latestSuccessTxHash, connectedWallet],
   );
+
+  async function getWalletClients() {
+    if (!window.ethereum) {
+      throw new Error('No browser wallet found.');
+    }
+
+    const targetChainId = chainId ?? KITE_TESTNET_CHAIN_ID;
+    const hexChainId = `0x${targetChainId.toString(16)}`;
+    const activeChain = kiteChainById(targetChainId);
+    const rpcUrl = activeChain.rpcUrls.default.http[0] ?? KITE_TESTNET_RPC_URL;
+    const explorerUrl = activeChain.blockExplorers?.default.url ?? KITE_TESTNET_EXPLORER_BASE_URL;
+    try {
+      await window.ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: hexChainId }],
+      });
+    } catch {
+      await window.ethereum.request({
+        method: 'wallet_addEthereumChain',
+        params: [{
+          chainId: hexChainId,
+          chainName: activeChain.name,
+          nativeCurrency: activeChain.nativeCurrency,
+          rpcUrls: [rpcUrl],
+          blockExplorerUrls: [explorerUrl],
+        }],
+      });
+    }
+
+    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' }) as string[];
+    const account = accounts[0];
+    if (!account || !isAddress(account)) {
+      throw new Error('Wallet did not return a valid admin address.');
+    }
+
+    setConnectedWallet(account);
+    window.localStorage.setItem(CONNECTED_WALLET_STORAGE_KEY, account);
+    if (!governedWallet) {
+      setWalletAddress(account);
+    }
+
+    const publicClient = createPublicClient({
+      chain: activeChain,
+      transport: http(rpcUrl),
+    });
+    const walletClient = createWalletClient({
+      chain: activeChain,
+      account: account as Address,
+      transport: custom(window.ethereum),
+    });
+
+    return { publicClient, walletClient, account: account as Address };
+  }
+
+  async function writeControllerContract(input: {
+    functionName: 'issueLease' | 'setLeaseStatus' | 'setOperatorMode';
+    args: readonly unknown[];
+  }) {
+    if (!controllerAddress || !isAddress(controllerAddress)) {
+      throw new Error('Missing controller contract address.');
+    }
+    const { publicClient, walletClient, account } = await getWalletClients();
+    const { request } = await publicClient.simulateContract({
+      account,
+      address: controllerAddress as Address,
+      abi: trustLeaseControllerAbi,
+      functionName: input.functionName as never,
+      args: input.args as never,
+    } as never);
+    const hash = await walletClient.writeContract(request as never);
+    await publicClient.waitForTransactionReceipt({ hash });
+    return hash;
+  }
+
+  async function writeVaultContract(input: {
+    functionName: 'setMemberPolicy' | 'setLeaseContext';
+    args: readonly unknown[];
+  }) {
+    if (!vaultAddress || !isAddress(vaultAddress)) {
+      throw new Error('Missing vault contract address.');
+    }
+    const { publicClient, walletClient, account } = await getWalletClients();
+    const { request } = await publicClient.simulateContract({
+      account,
+      address: vaultAddress as Address,
+      abi: boundlessVaultAbi,
+      functionName: input.functionName as never,
+      args: input.args as never,
+    } as never);
+    const hash = await walletClient.writeContract(request as never);
+    await publicClient.waitForTransactionReceipt({ hash });
+    return hash;
+  }
 
   async function runAction(action: ControlAction) {
     setBusyAction(action);
@@ -313,7 +508,7 @@ export function OperatorConsole({
     if (action === 'issue-lease') {
       if (!walletAddress.trim().startsWith('0x')) {
         setBusyAction(null);
-        setError('Set a valid wallet address before saving the rule.');
+        setError('Set a valid wallet address before saving the policy.');
         return;
       }
       if (!Number.isFinite(perTxValue) || perTxValue <= 0 || !Number.isFinite(dailyValue) || dailyValue <= 0) {
@@ -345,6 +540,101 @@ export function OperatorConsole({
     }
 
     try {
+      const walletActions = new Set<ControlAction>([
+        'issue-lease',
+        'revoke-lease',
+        'pause',
+        'review',
+        'resume',
+        'set-member-policy',
+      ]);
+
+      if (walletActions.has(action)) {
+        if (action === 'issue-lease') {
+          const nextLeaseId = `lease_${crypto.randomUUID()}`;
+          const nextConsumerName = consumerName?.trim() || 'bound-agent';
+          const nextOperatorName = operatorName?.trim() || 'human-principal';
+          const nextBaseAsset = baseAssetInput.trim().toUpperCase();
+          const nextAllowedAssets = parseCsvText(allowedAssetsInput).map((value) => value.toUpperCase());
+          const nextAllowedProtocols = parseCsvText(allowedProtocolsInput).map((value) => value.toLowerCase());
+          const nextAllowedActions = ['buy', 'sell', 'rebalance'];
+          const nextCounterparties = nextAllowedProtocols;
+          const expiresAtUnix = BigInt(Math.floor(Date.now() / 1000) + expiryValue * 60 * 60);
+          const policyHash = policyHashForLease({
+            consumerName: nextConsumerName,
+            walletAddress: walletAddress.trim(),
+            baseAsset: nextBaseAsset,
+            allowedAssets: nextAllowedAssets,
+            allowedProtocols: nextAllowedProtocols,
+            allowedActions: nextAllowedActions,
+            counterpartyAllowlist: nextCounterparties,
+            perTxUsd: perTxValue,
+            dailyBudgetUsd: dailyValue,
+          });
+          const notesHash = hashText(note.trim() || 'Boundless policy for Passport-governed agent payments.');
+
+          await writeControllerContract({
+            functionName: 'issueLease',
+            args: [
+              nextLeaseId,
+              nextConsumerName,
+              walletAddress.trim() as Address,
+              nextBaseAsset,
+              expiresAtUnix,
+              toUsd6(perTxValue),
+              toUsd6(dailyValue),
+              policyHash,
+              notesHash,
+            ] as const,
+          });
+
+          if (vaultAddress) {
+            await writeVaultContract({
+              functionName: 'setLeaseContext',
+              args: [nextLeaseId, nextConsumerName, nextOperatorName] as const,
+            });
+          }
+
+          if (leaseId && leaseStatus === 'active') {
+            await writeControllerContract({
+              functionName: 'setLeaseStatus',
+              args: [leaseId, statusCode('revoked'), hashText('superseded by wallet-signed policy update')] as const,
+            });
+          }
+        } else if (action === 'revoke-lease') {
+          if (!leaseId) {
+            throw new Error('No active policy to disable.');
+          }
+          await writeControllerContract({
+            functionName: 'setLeaseStatus',
+            args: [leaseId, statusCode('revoked'), hashText(note)] as const,
+          });
+        } else if (action === 'pause' || action === 'review' || action === 'resume') {
+          const nextMode = action === 'pause' ? 'paused' : action === 'review' ? 'review' : 'active';
+          await writeControllerContract({
+            functionName: 'setOperatorMode',
+            args: [operatorName?.trim() || 'human-principal', operatorModeCode(nextMode), hashText(note)] as const,
+          });
+        } else if (action === 'set-member-policy') {
+          await writeVaultContract({
+            functionName: 'setMemberPolicy',
+            args: [
+              memberAddressInput.trim() as Address,
+              memberEnabled,
+              toUsd6(Number(memberPerTxInput)),
+              toUsd6(Number(memberDailyInput)),
+            ] as const,
+          });
+        }
+
+        setMessage('Wallet-signed action confirmed onchain.');
+        if (action !== 'refresh-proof') {
+          setNote('');
+        }
+        router.refresh();
+        return;
+      }
+
       const response = await fetch('/api/control', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -391,12 +681,14 @@ export function OperatorConsole({
   // Guide functions
   function closeGuide(markSeen = true) {
     setGuideOpen(false);
+    window.sessionStorage.setItem(GUIDE_SESSION_DISMISSED_KEY, '1');
     if (markSeen) {
       window.localStorage.setItem(GUIDE_STORAGE_KEY, '1');
     }
   }
 
   function openGuide() {
+    window.sessionStorage.removeItem(GUIDE_SESSION_DISMISSED_KEY);
     setGuideStepIndex(0);
     setGuideOpen(true);
   }
@@ -439,6 +731,14 @@ export function OperatorConsole({
             </div>
           )}
         </div>
+      </div>
+
+      <div className="response-banner pending" style={{ marginBottom: 16 }}>
+        Kite Passport handles identity and delegated payment permission. Boundless adds the policy gate, operator controls, and proof shown below.
+      </div>
+
+      <div className="response-banner pending" style={{ marginBottom: 16 }}>
+        Admin actions are wallet-signed. Boundless never requires the treasury owner to give the app a private key.
       </div>
 
       <div className="console-form">
@@ -484,7 +784,7 @@ export function OperatorConsole({
                 id="base-asset"
                 value={baseAssetInput}
                 onChange={(event) => setBaseAssetInput(event.target.value.toUpperCase())}
-                placeholder="USDT0"
+                placeholder="USDT"
                 className="note-input"
               />
             </div>
@@ -494,7 +794,7 @@ export function OperatorConsole({
                 id="allowed-assets"
                 value={allowedAssetsInput}
                 onChange={(event) => setAllowedAssetsInput(event.target.value)}
-                placeholder="USDT0,USDC,OKB"
+                placeholder="USDT"
                 className="note-input"
               />
             </div>
@@ -504,7 +804,7 @@ export function OperatorConsole({
                 id="allowed-protocols"
                 value={allowedProtocolsInput}
                 onChange={(event) => setAllowedProtocolsInput(event.target.value)}
-                placeholder="okx-aggregator,quickswap"
+                placeholder="x402,mcp"
                 className="note-input"
               />
             </div>
@@ -527,7 +827,7 @@ export function OperatorConsole({
             id="operator-note"
             value={note}
             onChange={(event) => setNote(event.target.value)}
-            placeholder="optional rule note or operator command reason"
+            placeholder="optional policy note or operator command reason"
             className="note-input"
           />
         </div>
@@ -540,7 +840,7 @@ export function OperatorConsole({
           </div>
         ) : null}
         <div className="action-group">
-          <div className="action-group-label">Rule</div>
+          <div className="action-group-label">Policy</div>
           <div className="action-buttons">
             {ACTION_GROUPS[0].actions.map((item) => (
               <button
@@ -647,7 +947,7 @@ export function OperatorConsole({
           disabled={busyAction !== null || !actionsEnabled}
           onClick={() => runAction('set-member-policy')}
         >
-          {busyAction === 'set-member-policy' ? ACTION_PENDING_LABEL['set-member-policy'] : 'Save Member'}
+          {busyAction === 'set-member-policy' ? ACTION_PENDING_LABEL['set-member-policy'] : 'Save Member Policy'}
         </button>
       </details>
 
@@ -656,12 +956,16 @@ export function OperatorConsole({
 
       {latestBlockedReason ? (
         <div className="control-footnote">
-          Latest guardrail: {latestBlockedReason}
+          Latest guardrail: {sanitizeProofText(latestBlockedReason)}
         </div>
       ) : null}
 
       {guideOpen ? (
-        <div className="guide-overlay" role="dialog" aria-label="Boundless quick guide">
+        <div
+          className="guide-overlay"
+          role="presentation"
+          onClick={() => closeGuide(false)}
+        >
           {guideTargetRect ? (
             <div
               className="guide-highlight"
@@ -679,6 +983,10 @@ export function OperatorConsole({
               top: `${guideCardPosition?.top ?? 96}px`,
               left: `${guideCardPosition?.left ?? 24}px`,
             }}
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Boundless quick guide"
           >
             <div className="guide-step-meta">
               Step {guideStepIndex + 1} / {GUIDE_STEPS.length}
@@ -687,6 +995,13 @@ export function OperatorConsole({
             <div className="guide-summary">{GUIDE_STEPS[guideStepIndex].summary}</div>
             <div className="guide-detail">{GUIDE_STEPS[guideStepIndex].detail}</div>
             <div className="guide-actions">
+              <button
+                type="button"
+                className="action-button neutral"
+                onClick={() => closeGuide(false)}
+              >
+                Close
+              </button>
               <button
                 type="button"
                 className="action-button neutral"

@@ -1,4 +1,5 @@
 import { ExecutionIntent, ExecutionResult, LeaseRequest } from "../core/types.js";
+import { networkLabelFromChainId } from "../../lib/chain-config.js";
 
 export function buildExplorerUrl(baseUrl: string, txHash: string): string {
   return `${baseUrl.replace(/\/+$/, "")}/tx/${txHash}`;
@@ -9,7 +10,7 @@ export function createExecutionIntent(input: {
   chainId: number;
 }): ExecutionIntent {
   return {
-    network: input.chainId === 196 ? "xlayer-mainnet" : "xlayer-custom",
+    network: networkLabelFromChainId(input.chainId),
     chainId: input.chainId,
     venueHint: input.request.venueHint,
     assetPair: input.request.assetPair,

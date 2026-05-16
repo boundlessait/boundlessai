@@ -2,7 +2,7 @@
 
 ## Goal
 
-Deploy the `TrustLeaseController` contract to X Layer and enable contract-driven lease, operator, and receipt state.
+Deploy the `TrustLeaseController` contract to onchain and enable contract-driven lease, operator, and receipt state.
 
 ## Current mainnet deployment
 
@@ -37,7 +37,7 @@ LEASE_CHAIN_SYNC_ENABLED=true
 LEASE_CONTROLLER_ADDRESS=0x...
 LEASE_CONTROLLER_WRITER_PRIVATE_KEY=0x...
 LEASE_CONTROLLER_DEPLOY_BLOCK=57453029
-LEASE_CONTROLLER_ARTIFACT_BASE_URI=https://your-proof-host.example/trust-leases
+LEASE_CONTROLLER_ARTIFACT_BASE_URI=https://your-proof-host.example/boundless
 ```
 
 Fallback behavior:
@@ -82,7 +82,7 @@ If you want strict spend control (funds locked in contract, not loose EOA wallet
 
 ```bash
 BOUNDLESS_VAULT_OWNER=0xYourEOA
-LEASE_CONSUMER_NAME=strategy-office
+LEASE_CONSUMER_NAME=bound-agent
 LEASE_OPERATOR_NAME=human-principal
 ```
 
@@ -135,6 +135,6 @@ npm run round:live
 ```
 
 Expected result:
-- local files update under `data/trust-leases`
+- local files update under `data/boundless`
 - controller tx hashes are printed in script output
 - dashboard reads controller-backed lease/operator state on the next page load

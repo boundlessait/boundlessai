@@ -249,7 +249,7 @@ export function readControllerConfig(env: NodeJS.ProcessEnv = process.env): Cont
     chainId: Number(env.XLAYER_CHAIN_ID || 196),
     controllerAddress: asAddress(env.LEASE_CONTROLLER_ADDRESS),
     writerPrivateKey: asHexKey(env.LEASE_CONTROLLER_WRITER_PRIVATE_KEY || env.XLAYER_PRIVATE_KEY || env.XLAYER_SETTLEMENT_PRIVATE_KEY),
-    consumerName: env.LEASE_CONSUMER_NAME || 'strategy-office',
+    consumerName: env.LEASE_CONSUMER_NAME || 'bound-agent',
     operatorName: env.LEASE_OPERATOR_NAME || 'human-principal',
     artifactBaseUri: env.LEASE_CONTROLLER_ARTIFACT_BASE_URI || undefined,
     chainSyncEnabled: parseBool(env.LEASE_CHAIN_SYNC_ENABLED, false),

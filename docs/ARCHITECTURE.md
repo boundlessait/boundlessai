@@ -1,97 +1,121 @@
-# Architecture
+# Boundless Architecture
 
-## Core idea
+## Core Thesis
 
-X Layer Trust Leases inserts a bounded authority envelope into the execution path:
+Boundless inserts a runtime governance layer between delegated payment permission and settlement.
 
 ```text
-human issues lease
--> consumer proposes request
--> lease validates scope and budget
--> approved request uses reused X Layer execution path
--> receipt and proof are written
+Kite Passport session
+-> Boundless policy envelope
+-> payment check
+-> allow or block
+-> proof packet
 ```
 
-## Main modules
+## System Layers
 
-### `src/lease/policy.ts`
+### 1. Kite Passport
 
-Builds and evaluates the lease envelope:
+Handles:
+
+- identity
+- delegated payment permission
+- session scope
+
+### 2. Boundless Policy Layer
+
+Handles:
+
+- governed wallet
+- per-transaction limit
+- daily budget
+- allowed assets
+- allowed protocols
+- operator mode
+- expiry
+
+### 3. Member Payment Check
+
+`/member-test` mirrors the active session boundary and prepares a real x402 request.
+
+Before the paid path continues, Boundless checks:
+
+- lease status
+- lease expiry
 - wallet scope
+- reason required
+- action allowlist
 - asset allowlist
 - protocol allowlist
 - counterparty allowlist
 - per-tx budget
 - daily budget
-- expiry
-- route quality and token safety gates
 
-### `src/runtime/trust-lease-agent.ts`
+### 4. Proof Layer
 
-Runs one lease round:
-- loads operator posture
-- reads treasury state
-- derives a trade candidate
-- builds a structured request
-- runs lease checks
-- executes if allowed
-- writes receipt and proof packet
+`/proof` renders:
 
-### `src/onchainos/cli.ts`
+- session boundary
+- request
+- decision
+- payment result
+- receipt / proof
 
-Reused from `xlayer-strategy-office`.
+## Main Modules
 
-Provides:
-- wallet status
-- wallet balance
-- token scan
-- swap quote
-- swap execute
+### `app/api/passport-session/route.ts`
 
-### `src/portfolio/manager.ts`
+Stores the Kite Passport session boundary used by the product surfaces.
 
-Reused from `xlayer-strategy-office`.
+### `app/api/x402-payment/route.ts`
 
-Provides:
-- wallet parsing
-- drift detection
-- trade candidate construction
-- route quoting
-- live execution
+Runs Boundless policy checks before the payment path is allowed to continue.
 
-### `src/historian/*`
+### `app/api/demo-x402-weather/route.ts`
 
-Produces:
-- latest proof JSON
-- round history
-- proof dashboard HTML
-- submission HTML
+Provides a demo x402 relay route so the paid flow can be exercised in product.
 
-## Runtime artifacts
+### `components/submission-page.tsx`
 
-Generated under `data/trust-leases/`:
+Operator-facing policy console.
+
+### `components/member-test-page.tsx`
+
+Session boundary, request preparation, and paid request flow.
+
+### `components/proof-page.tsx`
+
+Unified proof surface for session, decision, and receipt state.
+
+### `lib/kite-passport-session.ts`
+
+Local persistence for saved session boundary metadata.
+
+### `lib/proof-artifacts.ts`
+
+Writes proof packets and receipt artifacts.
+
+### `lib/site-data.ts`
+
+Merges current proof data, operator state, controller state, and the current lease snapshot for rendering.
+
+## Artifact Outputs
+
+Generated state lives under `data/trust-leases/`:
 
 - `leases/active-lease.json`
-- `receipts/*.json`
-- `rounds/*.json`
 - `live-proof-latest.json`
 - `proof-dashboard.html`
 - `submission.html`
 
-Committed submission samples under `examples/`:
+Committed examples live under `examples/`.
 
-- `active-lease.sample.json`
-- `latest-receipt.sample.json`
-- `latest-round.sample.json`
-- `live-proof-latest.json`
-- `proof-dashboard.sample.html`
-- `submission.sample.html`
+## Engineering Choice
 
-## Design choice
+Boundless does not rebuild Passport. It layers policy and proof above Passport.
 
-This project intentionally reuses working execution code instead of rebuilding X Layer execution from scratch.
+That is the correct product boundary:
 
-That is the correct engineering tradeoff for a hackathon submission:
-- less integration risk
-- more real proof
-- faster path to a submission-grade repo
+- Passport owns delegated permission
+- Boundless owns runtime governance
+- Proof makes both outcomes legible to humans

@@ -9,10 +9,10 @@
    - project intro
    - architecture overview
    - deployment / usage surface
-   - X Layer integration
+   - onchain integration
    - working mechanics
    - team members
-   - X Layer ecosystem positioning
+   - onchain ecosystem positioning
    - status: done
 
 3. Reusable skill definition
@@ -32,8 +32,8 @@
 
 Use this framing consistently:
 
-- Trust Leases is not a trading bot.
-- Trust Leases is the pre-execution governance layer for other X Layer agents.
+- Boundless is not a trading bot.
+- Boundless is the pre-execution governance layer for other onchain agents.
 - It turns agent action intents into approve / resize / block / review decisions.
 - It enforces budget limits, asset/protocol/action/counterparty whitelists.
 - It provides complete audit trail via proof packets.
@@ -44,7 +44,7 @@ Use this framing consistently:
 | --- | --- | --- |
 | Route Referee | Pre-execution | Judge route quality |
 | Execution Proof Kit | Post-execution | Generate execution evidence |
-| **Trust Leases** | **Pre-execution** | **Enforce bounded authority** |
+| **Boundless** | **Pre-execution** | **Enforce bounded authority** |
 
 ## Manual Submission Items
 

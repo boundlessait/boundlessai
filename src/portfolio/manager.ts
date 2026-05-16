@@ -8,13 +8,12 @@ import {
   TradeCandidate
 } from "../office/types.js";
 import { TreasurySnapshot } from "../core/types.js";
+import { KITE_TESTNET_CHAIN_ID, KITE_TESTNET_USDT_ADDRESS, networkLabelFromChainId } from "../../lib/chain-config.js";
 
 const TOKEN_REGISTRY: Record<string, { address?: string; decimals: number; priceUsd?: number }> = {
   USDT0: { decimals: 6 },
-  USDT: { address: "0x779ded0c9e1022225f8e0630b35a9b54be713736", decimals: 6, priceUsd: 1 },
-  USDC: { address: "0x74b7f16337b8972027f6196a17a631ac6de26d22", decimals: 6, priceUsd: 1 },
-  OKB: { address: "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", decimals: 18 },
-  WOKB: { address: "0xe538905cf8410324e03a5a23c1c177a474d59b2b", decimals: 18 },
+  USDT: { address: KITE_TESTNET_USDT_ADDRESS, decimals: 6, priceUsd: 1 },
+  KITE: { address: "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", decimals: 18 },
   ETH: { decimals: 18 },
   WETH: { decimals: 18 },
   WBTC: { decimals: 8 }
@@ -66,7 +65,7 @@ export class PortfolioManager {
       return normalizedBase;
     }
 
-    if (upper === "USDT" && normalizedBase === "USDT0") {
+    if (upper === "USDT" && ["USDT0", "USDT"].includes(normalizedBase)) {
       return normalizedBase;
     }
 
@@ -191,7 +190,7 @@ export class PortfolioManager {
 
     return {
       timestamp: new Date().toISOString(),
-      network: this.chainId === 196 ? "xlayer-mainnet" : "xlayer-custom",
+      network: networkLabelFromChainId(this.chainId),
       chainId: this.chainId,
       baseAsset: this.baseAssetSymbol,
       totalUsd: overview.totalValueUsd || liquidUsd,
@@ -253,7 +252,7 @@ export class PortfolioManager {
       .sort((left, right) => right.usdValue - left.usdValue)[0];
 
     const fromToken = overweight?.symbol ?? fallbackSource?.symbol ?? this.baseAssetSymbol;
-    const toToken = underweight?.symbol ?? "OKB";
+    const toToken = underweight?.symbol ?? (this.chainId === KITE_TESTNET_CHAIN_ID ? "USDT" : this.baseAssetSymbol);
 
     if (!fromToken || !toToken || fromToken === toToken) {
       return null;
@@ -292,8 +291,8 @@ export class PortfolioManager {
       action: overweight ? "rebalance" : "buy",
       reason:
         underweight && overweight
-          ? `${toToken} is underweight and ${fromToken} is overweight relative to the office target allocation.`
-          : `${toToken} is the highest-priority target asset under the current office strategy.`
+          ? `${toToken} is underweight and ${fromToken} is overweight relative to the current policy target allocation.`
+          : `${toToken} is the highest-priority target asset under the current budget policy.`
     };
   }
 
@@ -439,7 +438,7 @@ export class PortfolioManager {
       amount: this.toRawTokenAmount(candidate),
       readableAmount: this.toReadableTokenAmount(candidate),
       chainId: this.chainId,
-      chainName: this.chainId === 196 ? "xlayer" : String(this.chainId),
+      chainName: this.chainId === KITE_TESTNET_CHAIN_ID ? "kite" : String(this.chainId),
       walletAddress: this.walletAddress
     });
 

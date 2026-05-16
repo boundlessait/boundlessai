@@ -8,6 +8,20 @@ export interface ProofPacket {
     updatedAt: string;
     note?: string;
   };
+  passportSession?: {
+    sessionId: string;
+    payerAddress: string;
+    agentName?: string;
+    agentId?: string;
+    network: string;
+    createdAt?: string;
+    expiresAt: string;
+    dailyBudgetUsd: number;
+    spentUsd: number;
+    remainingBudgetUsd: number;
+    portalUrl?: string;
+    notes?: string;
+  };
   lease: {
     leaseId: string;
     issuedAt: string;
@@ -59,6 +73,20 @@ export interface ProofPacket {
     counterparty: string;
     notionalUsd: number;
     reason: string;
+  };
+  paymentAttempt?: {
+    serviceUrl: string;
+    serviceHost: string;
+    resource: string;
+    httpMethod: string;
+    httpStatus: number;
+    merchantName?: string;
+    network?: string;
+    asset?: string;
+    maxAmountRequired?: string;
+    xPaymentPresent: boolean;
+    challengeSummary?: string;
+    responsePreview?: string;
   };
   checks: Array<{
     id: string;

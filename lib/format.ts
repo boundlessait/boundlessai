@@ -45,3 +45,15 @@ export function formatTimestamp(value?: string): string {
     hour12: false
   }).format(parsed);
 }
+
+export function sanitizeProofText(value?: string | null): string {
+  if (!value) return '—';
+
+  return value
+    .replaceAll(/strategy-office/gi, 'bound agent')
+    .replaceAll(/X Layer/gi, 'the network')
+    .replaceAll(/leaseable/gi, 'allowed')
+    .replaceAll(/trust lease/gi, 'rule')
+    .replaceAll(/No material allocation drift produced a [^.]+/gi, 'No eligible governed action was produced in this round')
+    .replaceAll(/No material allocation drift exceeded the minimum trade threshold for this [^.]+/gi, 'No request met the minimum threshold for this round');
+}

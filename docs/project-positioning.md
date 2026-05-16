@@ -1,6 +1,6 @@
 # Project Positioning
 
-X Layer Trust Leases is a reusable pre-execution governance skill for X Layer agents.
+Boundless is a reusable pre-execution governance skill for onchain agents.
 
 ## Core Claim
 
@@ -23,7 +23,7 @@ It is a modular governance layer that any agent can call before execution.
 ## Why It Is Stronger Than A Simple Budget Wrapper
 
 A simple budget wrapper only checks if amount < limit.
-Trust Leases returns:
+Boundless returns:
 
 - a complete lease envelope with all terms
 - policy check results (asset, protocol, action, counterparty)
@@ -39,8 +39,8 @@ Primary target:
 
 Strong special-prize angles:
 
-- `Best governance / compliance tool` - trust leases as pre-execution guardrails
+- `Best governance / compliance tool` - rules as pre-execution guardrails
 - `Best security integration` - bounded authority prevents unauthorized spending
-- `Best X Layer integration` - on-chain lease state + off-chain proof artifacts
+- `Best onchain integration` - on-chain lease state + off-chain proof artifacts
 
-The project can explicitly demonstrate how agents get bounded authority on X Layer, with live proof of budget enforcement and policy checks.
+The project can explicitly demonstrate how agents get bounded authority on onchain, with live proof of budget enforcement and policy checks.
